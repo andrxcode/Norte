@@ -9,27 +9,36 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Norte — Life & Wealth Planning</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   :root {
-    --bg: #0a0a0f;
-    --bg2: #111118;
-    --bg3: #181824;
-    --card: #14141e;
-    --border: #1e1e2e;
-    --border2: #252535;
-    --gold: #c9a84c;
-    --gold2: #e8c97a;
-    --gold3: #f5e0a0;
-    --red: #e05555;
-    --green: #4caf7d;
-    --blue: #5b8dee;
-    --muted: #4a4a6a;
-    --text: #e8e8f0;
-    --text2: #9090b0;
-    --text3: #5a5a7a;
+    --bg:      #080b10;
+    --bg2:     #0d1117;
+    --bg3:     #111820;
+    --card:    #0f1520;
+    --card2:   #131c28;
+    --border:  #1a2535;
+    --border2: #1f2e42;
+    --cyan:    #00d4ff;
+    --cyan2:   #00b8e6;
+    --cyan-dim:#003d4d;
+    --green:   #00e676;
+    --green2:  #00c853;
+    --green-dim:#002b1a;
+    --red:     #ff3d57;
+    --red2:    #e0002f;
+    --red-dim: #2b0010;
+    --amber:   #ffab00;
+    --amber-dim:#2b2000;
+    --blue:    #448aff;
+    --blue-dim:#0a1a40;
+    --muted:   #2a3a50;
+    --text:    #e2eaf5;
+    --text2:   #6b85a0;
+    --text3:   #3a4f65;
+    --accent:  #00d4ff;
   }
 
 - { box-sizing: border-box; margin: 0; padding: 0; }
@@ -37,70 +46,85 @@
 body {
 background: var(–bg);
 color: var(–text);
-font-family: ‘Instrument Sans’, sans-serif;
+font-family: ‘Sora’, sans-serif;
 min-height: 100vh;
 overflow-x: hidden;
+font-size: 14px;
 }
 
-.mono { font-family: ‘DM Mono’, monospace; }
-.serif { font-family: ‘Playfair Display’, serif; }
+.mono { font-family: ‘JetBrains Mono’, monospace; }
 
-/* Noise texture overlay */
-body::before {
+/* Grid lines background — subtle trading aesthetic */
+body::after {
 content: ‘’;
 position: fixed;
 inset: 0;
-background-image: url(“data:image/svg+xml,%3Csvg viewBox=‘0 0 256 256’ xmlns=‘http://www.w3.org/2000/svg’%3E%3Cfilter id=‘noise’%3E%3CfeTurbulence type=‘fractalNoise’ baseFrequency=‘0.9’ numOctaves=‘4’ stitchTiles=‘stitch’/%3E%3C/filter%3E%3Crect width=‘100%25’ height=‘100%25’ filter=‘url(%23noise)’ opacity=‘0.03’/%3E%3C/svg%3E”);
+background-image:
+linear-gradient(rgba(0,212,255,0.025) 1px, transparent 1px),
+linear-gradient(90deg, rgba(0,212,255,0.025) 1px, transparent 1px);
+background-size: 48px 48px;
 pointer-events: none;
-z-index: 9999;
-opacity: 0.4;
+z-index: 0;
 }
 
+#app { position: relative; z-index: 1; }
+
 /* Scrollbar */
-::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-track { background: var(–bg); }
 ::-webkit-scrollbar-thumb { background: var(–border2); border-radius: 2px; }
 
-/* Cards */
+/* Cards — trading terminal style */
 .card {
 background: var(–card);
 border: 1px solid var(–border);
-border-radius: 12px;
-transition: border-color 0.2s;
+border-radius: 8px;
+transition: border-color 0.15s;
 }
 .card:hover { border-color: var(–border2); }
 
 .card-glow {
-box-shadow: 0 0 40px rgba(201, 168, 76, 0.05);
-border-color: rgba(201, 168, 76, 0.15);
+border-color: rgba(0,212,255,0.2);
+box-shadow: 0 0 0 1px rgba(0,212,255,0.05), inset 0 0 32px rgba(0,212,255,0.02);
 }
 
-/* Gold accent line */
-.gold-line {
-background: linear-gradient(90deg, var(–gold), transparent);
+/* Top accent bar */
+.card-accent-top {
+border-top: 2px solid var(–cyan);
+}
+.card-accent-green { border-top: 2px solid var(–green); }
+.card-accent-red   { border-top: 2px solid var(–red); }
+.card-accent-amber { border-top: 2px solid var(–amber); }
+
+/* Divider */
+.divider {
 height: 1px;
+background: var(–border);
+width: 100%;
 }
 
-/* Number inputs */
+/* Inputs */
 input[type=“number”], input[type=“text”], input[type=“range”], select {
 background: var(–bg3);
 border: 1px solid var(–border2);
 color: var(–text);
-border-radius: 8px;
+border-radius: 6px;
 outline: none;
-transition: border-color 0.2s;
-font-family: ‘DM Mono’, monospace;
+transition: border-color 0.15s, box-shadow 0.15s;
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 13px;
 }
 input[type=“number”]:focus, input[type=“text”]:focus, select:focus {
-border-color: var(–gold);
+border-color: var(–cyan);
+box-shadow: 0 0 0 2px rgba(0,212,255,0.1);
 }
 select option { background: var(–bg3); }
 
-/* Range input */
+/* Range */
 input[type=“range”] {
 -webkit-appearance: none;
 background: var(–border2);
-height: 4px;
+height: 3px;
 border: none;
 border-radius: 2px;
 cursor: pointer;
@@ -108,186 +132,107 @@ padding: 0;
 }
 input[type=“range”]::-webkit-slider-thumb {
 -webkit-appearance: none;
-width: 16px;
-height: 16px;
+width: 14px; height: 14px;
 border-radius: 50%;
-background: var(–gold);
+background: var(–cyan);
 cursor: pointer;
+box-shadow: 0 0 6px rgba(0,212,255,0.5);
 }
 
-/* Tabs */
-.tab-btn {
-padding: 8px 16px;
-border-radius: 6px;
-font-size: 12px;
-font-weight: 500;
-letter-spacing: 0.05em;
-text-transform: uppercase;
-cursor: pointer;
-transition: all 0.2s;
-color: var(–text3);
-background: transparent;
-border: none;
-white-space: nowrap;
-}
-.tab-btn.active {
-background: var(–bg3);
-color: var(–gold2);
-border: 1px solid rgba(201,168,76,0.2);
-}
-.tab-btn:hover:not(.active) { color: var(–text2); }
-
-/* Metric cards */
+/* Metric value — large numbers */
 .metric-value {
-font-family: ‘Playfair Display’, serif;
-font-weight: 700;
+font-family: ‘JetBrains Mono’, monospace;
+font-weight: 600;
 letter-spacing: -0.02em;
+line-height: 1;
 }
 
-/* Progress bars */
-.progress-bar {
-height: 6px;
-background: var(–border2);
+/* Label chip */
+.chip {
+display: inline-flex;
+align-items: center;
+gap: 4px;
+padding: 2px 7px;
 border-radius: 3px;
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 10px;
+font-weight: 600;
+letter-spacing: 0.04em;
+text-transform: uppercase;
+}
+.chip-cyan   { background: rgba(0,212,255,0.1);  color: var(–cyan);  border: 1px solid rgba(0,212,255,0.25); }
+.chip-green  { background: rgba(0,230,118,0.1);  color: var(–green); border: 1px solid rgba(0,230,118,0.25); }
+.chip-red    { background: rgba(255,61,87,0.1);   color: var(–red);   border: 1px solid rgba(255,61,87,0.25); }
+.chip-amber  { background: rgba(255,171,0,0.1);  color: var(–amber); border: 1px solid rgba(255,171,0,0.25); }
+.chip-muted  { background: rgba(42,58,80,0.5);   color: var(–text2); border: 1px solid var(–border2); }
+
+/* Progress bars — thinner, sharper */
+.progress-bar {
+height: 4px;
+background: var(–border);
+border-radius: 2px;
 overflow: hidden;
 }
 .progress-fill {
 height: 100%;
-border-radius: 3px;
-transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+border-radius: 2px;
+transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Badge */
-.badge {
-display: inline-flex;
-align-items: center;
-padding: 2px 8px;
-border-radius: 99px;
-font-size: 10px;
-font-family: ‘DM Mono’, monospace;
-font-weight: 500;
-letter-spacing: 0.05em;
-text-transform: uppercase;
-}
-
-/* Tooltip */
-.tooltip {
-position: relative;
-cursor: help;
-}
-.tooltip:hover::after {
-content: attr(data-tip);
-position: absolute;
-bottom: 120%;
-left: 50%;
-transform: translateX(-50%);
-background: var(–bg3);
-border: 1px solid var(–border2);
-color: var(–text2);
-font-size: 11px;
-padding: 6px 10px;
-border-radius: 6px;
-white-space: nowrap;
-z-index: 100;
-pointer-events: none;
-}
-
-/* Section fade in */
-.section-panel {
-animation: fadeUp 0.3s ease;
-}
+/* Section animation */
+.section-panel { animation: fadeUp 0.25s ease; }
 @keyframes fadeUp {
-from { opacity: 0; transform: translateY(8px); }
-to { opacity: 1; transform: translateY(0); }
-}
-
-/* North star header decoration */
-.north-star {
-position: relative;
-display: inline-block;
-}
-.north-star::after {
-content: ‘✦’;
-position: absolute;
-top: -4px;
-right: -14px;
-font-size: 8px;
-color: var(–gold);
-animation: pulse-star 3s ease-in-out infinite;
-}
-@keyframes pulse-star {
-0%, 100% { opacity: 1; transform: scale(1); }
-50% { opacity: 0.4; transform: scale(0.8); }
+from { opacity: 0; transform: translateY(6px); }
+to   { opacity: 1; transform: translateY(0); }
 }
 
 /* Gauge */
 .gauge-svg { transform: rotate(-90deg); }
 
-/* Alert */
-.alert-warn {
-background: rgba(224, 85, 85, 0.08);
-border: 1px solid rgba(224, 85, 85, 0.2);
-border-radius: 8px;
-}
-.alert-ok {
-background: rgba(76, 175, 125, 0.08);
-border: 1px solid rgba(76, 175, 125, 0.2);
-border-radius: 8px;
-}
-.alert-neutral {
-background: rgba(91, 141, 238, 0.08);
-border: 1px solid rgba(91, 141, 238, 0.2);
-border-radius: 8px;
-}
+/* Alerts */
+.alert-warn    { background: var(–red-dim);   border: 1px solid rgba(255,61,87,0.2);  border-radius: 6px; }
+.alert-ok      { background: var(–green-dim); border: 1px solid rgba(0,230,118,0.2); border-radius: 6px; }
+.alert-neutral { background: var(–blue-dim);  border: 1px solid rgba(68,138,255,0.2); border-radius: 6px; }
+.alert-amber   { background: var(–amber-dim); border: 1px solid rgba(255,171,0,0.2);  border-radius: 6px; }
 
-/* Nav bottom */
+/* Nav */
 .nav-item {
 flex: 1;
 display: flex;
 flex-direction: column;
 align-items: center;
-padding: 8px 4px;
+padding: 7px 4px;
 cursor: pointer;
-transition: color 0.2s;
+transition: color 0.15s;
 color: var(–text3);
-font-size: 10px;
-letter-spacing: 0.05em;
+font-size: 9px;
+font-weight: 600;
+letter-spacing: 0.06em;
 text-transform: uppercase;
 background: none;
 border: none;
+font-family: ‘Sora’, sans-serif;
 }
-.nav-item.active { color: var(–gold2); }
+.nav-item.active { color: var(–cyan); }
+.nav-item.active svg { filter: drop-shadow(0 0 4px rgba(0,212,255,0.6)); }
 .nav-item svg { margin-bottom: 3px; }
 
-/* Chart container */
+/* Chart */
 .chart-wrap { position: relative; width: 100%; }
 
-/* Scenario cards */
+/* Scenario cards — terminal side border */
 .scenario-card {
-border-left: 3px solid;
-padding: 12px 16px;
-border-radius: 0 8px 8px 0;
+border-left: 2px solid;
+padding: 10px 14px;
+border-radius: 0 6px 6px 0;
 background: var(–bg3);
-}
-
-/* Skeleton */
-.skeleton {
-background: linear-gradient(90deg, var(–border) 25%, var(–border2) 50%, var(–border) 75%);
-background-size: 200% 100%;
-animation: shimmer 1.5s infinite;
-border-radius: 4px;
-}
-@keyframes shimmer {
-0% { background-position: 200% 0; }
-100% { background-position: -200% 0; }
 }
 
 /* Modal */
 .modal-overlay {
-position: fixed;
-inset: 0;
-background: rgba(0,0,0,0.7);
-backdrop-filter: blur(4px);
+position: fixed; inset: 0;
+background: rgba(0,0,0,0.75);
+backdrop-filter: blur(6px);
 z-index: 1000;
 display: flex;
 align-items: flex-end;
@@ -295,40 +240,130 @@ justify-content: center;
 }
 .modal-sheet {
 background: var(–bg2);
-border: 1px solid var(–border);
-border-radius: 20px 20px 0 0;
-padding: 24px;
+border: 1px solid var(–border2);
+border-bottom: none;
+border-radius: 16px 16px 0 0;
+padding: 20px;
 width: 100%;
 max-width: 480px;
-max-height: 85vh;
+max-height: 88vh;
 overflow-y: auto;
-animation: slideUp 0.3s cubic-bezier(0.4,0,0.2,1);
+animation: slideUp 0.28s cubic-bezier(0.4,0,0.2,1);
 }
 @keyframes slideUp {
 from { transform: translateY(100%); }
-to { transform: translateY(0); }
+to   { transform: translateY(0); }
+}
+.modal-handle {
+width: 36px; height: 3px;
+background: var(–border2);
+border-radius: 2px;
+margin: 0 auto 16px;
 }
 
+/* Formula box */
 .formula-box {
 background: var(–bg);
 border: 1px solid var(–border2);
-border-radius: 8px;
-padding: 12px;
-font-family: ‘DM Mono’, monospace;
+border-left: 2px solid var(–cyan);
+border-radius: 0 6px 6px 0;
+padding: 10px 12px;
+font-family: ‘JetBrains Mono’, monospace;
 font-size: 11px;
 color: var(–text2);
-line-height: 1.8;
+line-height: 1.9;
 }
 
-/* Horizontal scroll tabs */
-.tabs-scroll {
+/* Section label */
+.section-label {
+font-family: ‘JetBrains Mono’, monospace;
+font-size: 10px;
+font-weight: 600;
+letter-spacing: 0.1em;
+text-transform: uppercase;
+color: var(–text3);
+}
+
+/* Ticker row */
+.ticker-row {
 display: flex;
-gap: 6px;
-overflow-x: auto;
-padding-bottom: 2px;
+align-items: center;
+justify-content: space-between;
+padding: 8px 0;
+border-bottom: 1px solid var(–border);
+}
+.ticker-row:last-child { border-bottom: none; }
+
+/* Tabs scroll */
+.tabs-scroll {
+display: flex; gap: 4px;
+overflow-x: auto; padding-bottom: 2px;
 scrollbar-width: none;
 }
 .tabs-scroll::-webkit-scrollbar { display: none; }
+
+/* Pulse dot */
+.pulse-dot {
+width: 6px; height: 6px;
+border-radius: 50%;
+background: var(–green);
+box-shadow: 0 0 0 0 rgba(0,230,118,0.4);
+animation: pulse-anim 2s ease-out infinite;
+}
+@keyframes pulse-anim {
+0%   { box-shadow: 0 0 0 0 rgba(0,230,118,0.4); }
+70%  { box-shadow: 0 0 0 6px rgba(0,230,118,0); }
+100% { box-shadow: 0 0 0 0 rgba(0,230,118,0); }
+}
+
+/* North logo pulse */
+.logo-dot {
+display: inline-block; width: 5px; height: 5px;
+border-radius: 50%; background: var(–cyan);
+margin-left: 3px; margin-bottom: 2px;
+box-shadow: 0 0 8px var(–cyan);
+animation: logo-pulse 3s ease-in-out infinite;
+vertical-align: middle;
+}
+@keyframes logo-pulse {
+0%,100% { opacity: 1; box-shadow: 0 0 8px var(–cyan); }
+50% { opacity: 0.3; box-shadow: none; }
+}
+
+/* Skeleton */
+.skeleton {
+background: linear-gradient(90deg, var(–border) 25%, var(–border2) 50%, var(–border) 75%);
+background-size: 200% 100%;
+animation: shimmer 1.5s infinite;
+border-radius: 3px;
+}
+@keyframes shimmer {
+0%   { background-position: 200% 0; }
+100% { background-position: -200% 0; }
+}
+
+/* Tab btn */
+.tab-btn {
+padding: 6px 14px;
+border-radius: 4px;
+font-size: 11px;
+font-weight: 600;
+letter-spacing: 0.04em;
+text-transform: uppercase;
+cursor: pointer;
+transition: all 0.15s;
+color: var(–text3);
+background: transparent;
+border: none;
+white-space: nowrap;
+font-family: ‘Sora’, sans-serif;
+}
+.tab-btn.active {
+background: rgba(0,212,255,0.08);
+color: var(–cyan);
+border: 1px solid rgba(0,212,255,0.2);
+}
+.tab-btn:hover:not(.active) { color: var(–text2); }
 </style>
 
 </head>
