@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0a0a0f">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -42,6 +42,10 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
+  html, body {
+    overscroll-behavior-y: none; /* EVITA EL REBOTE EN iOS */
+  }
+
   body {
     background: var(--bg);
     color: var(--text);
@@ -49,6 +53,7 @@
     min-height: 100vh;
     overflow-x: hidden;
     font-size: 14px;
+    position: relative; /* Ayuda con el overscroll */
   }
 
   .mono { font-family: 'JetBrains Mono', monospace; }
@@ -111,7 +116,7 @@
     outline: none;
     transition: border-color 0.15s, box-shadow 0.15s;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
+    font-size: 16px; /* CAMBIADO DE 13px A 16px PARA EVITAR ZOOM EN iOS */
   }
   input[type="number"]:focus, input[type="text"]:focus, select:focus {
     border-color: var(--cyan);
@@ -367,15 +372,10 @@
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!--  APP SHELL                                                   -->
-<!-- ═══════════════════════════════════════════════════════════ -->
-
 <div id="app" class="flex flex-col min-h-screen pb-20">
 
-  <!-- HEADER -->
-  <header class="sticky top-0 z-50 px-5 py-4 flex items-center justify-between"
-          style="background: rgba(10,10,15,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border);">
+  <header class="sticky top-0 z-50 px-5 flex items-center justify-between"
+          style="background: rgba(10,10,15,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding-top: max(1rem, env(safe-area-inset-top)); padding-bottom: 1rem;">
     <div>
       <div class="serif font-black text-xl tracking-tight" style="color: var(--gold2);">
         <span class="north-star">Norte</span>
@@ -389,14 +389,11 @@
     </button>
   </header>
 
-  <!-- MAIN CONTENT -->
   <main id="main-content" class="flex-1 px-4 py-4 max-w-lg mx-auto w-full">
-    <!-- Dynamic content injected here -->
-  </main>
+    </main>
 
 </div>
 
-<!-- BOTTOM NAV -->
 <nav class="fixed bottom-0 left-0 right-0 z-50 flex"
      style="background: rgba(10,10,15,0.97); backdrop-filter: blur(16px); border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom);">
   <button class="nav-item active" onclick="navigate('dashboard')" id="nav-dashboard">
@@ -433,7 +430,6 @@
   </button>
 </nav>
 
-<!-- SETUP MODAL -->
 <div id="setup-modal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeSetup()">
   <div class="modal-sheet">
     <div class="flex items-center justify-between mb-5">
@@ -450,7 +446,6 @@
   </div>
 </div>
 
-<!-- MILESTONE MODAL -->
 <div id="milestone-modal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeMilestone()">
   <div class="modal-sheet">
     <div class="flex items-center justify-between mb-5">
@@ -467,9 +462,6 @@
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════ -->
-<!--  JAVASCRIPT ENGINE                                           -->
-<!-- ═══════════════════════════════════════════════════════════ -->
 <script>
 'use strict';
 
@@ -827,7 +819,6 @@ function renderDashboard() {
 
   return `<div class="section-panel space-y-4">
 
-    <!-- Saludo + Score -->
     <div class="card card-glow p-5">
       <div class="flex items-start justify-between">
         <div>
@@ -876,7 +867,6 @@ function renderDashboard() {
       </div>
     </div>
 
-    <!-- Gap Analysis -->
     <div class="card p-5">
       <div class="text-xs mono uppercase tracking-widest mb-3" style="color: var(--text3);">Gap · Cuota Diana Total</div>
       <div class="flex items-center justify-between mb-2">
@@ -900,7 +890,6 @@ function renderDashboard() {
       </div>
     </div>
 
-    <!-- Proyección patrimonio -->
     <div class="card p-5">
       <div class="text-xs mono uppercase tracking-widest mb-1" style="color: var(--text3);">Proyección Patrimonial</div>
       <div class="text-xs mb-4" style="color: var(--text3);">Interés compuesto @ ${fmtPct(p.rentabilidadInversion)}</div>
@@ -916,7 +905,6 @@ function renderDashboard() {
       </div>
     </div>
 
-    <!-- Hitos activos -->
     <div class="card p-5">
       <div class="flex items-center justify-between mb-3">
         <div class="text-xs mono uppercase tracking-widest" style="color: var(--text3);">Hitos Activos</div>
@@ -995,7 +983,6 @@ function renderMetas() {
       </button>
     </div>
 
-    <!-- Macro inflación -->
     <div class="card p-4">
       <div class="mono text-xs uppercase tracking-widest mb-3" style="color: var(--text3);">Motor de Inflación</div>
       <div class="formula-box">
@@ -1013,7 +1000,6 @@ function renderMetas() {
       </div>
     </div>
 
-    <!-- Milestones -->
     ${state.milestones.map(m => {
       const c = calcMilestone(m, p);
       const pct = m.completado ? 100 : Math.min(100, Math.round((p.ahorroActual / c.capital) * 100));
@@ -1104,7 +1090,6 @@ function renderCuota() {
       <div class="mono text-xs mt-0.5" style="color: var(--text3);">Ingeniería inversa de aportación mensual</div>
     </div>
 
-    <!-- Fórmula -->
     <div class="card p-4">
       <div class="mono text-xs uppercase tracking-widest mb-3" style="color: var(--text3);">Algoritmo PMT</div>
       <div class="formula-box">
@@ -1119,7 +1104,6 @@ function renderCuota() {
       </div>
     </div>
 
-    <!-- Resumen total -->
     <div class="card card-glow p-5">
       <div class="mono text-xs uppercase tracking-widest mb-3" style="color: var(--text3);">Cuota Total · Todos los Hitos</div>
       <div class="flex items-end gap-3 mb-4">
@@ -1153,7 +1137,6 @@ function renderCuota() {
       </div>`}
     </div>
 
-    <!-- Desglose por hito -->
     <div class="card p-5">
       <div class="mono text-xs uppercase tracking-widest mb-4" style="color: var(--text3);">Desglose por Hito</div>
       ${calcs.map(({ m, c }) => {
@@ -1177,7 +1160,6 @@ function renderCuota() {
       }).join('')}
     </div>
 
-    <!-- Sensibilidad por rentabilidad -->
     <div class="card p-5">
       <div class="mono text-xs uppercase tracking-widest mb-4" style="color: var(--text3);">Sensibilidad · Escenarios de Rentabilidad</div>
       ${milestones.map(m => `
@@ -1201,7 +1183,6 @@ function renderCuota() {
         </div>`).join('')}
     </div>
 
-    <!-- Simulador interactivo -->
     <div class="card p-5">
       <div class="mono text-xs uppercase tracking-widest mb-4" style="color: var(--text3);">Simulador · Tiempo vs Cuota</div>
       <div class="mb-3">
@@ -1282,7 +1263,6 @@ function renderFlujo() {
       <div class="mono text-xs mt-0.5" style="color: var(--text3);">Métricas ideales por edad e ingresos</div>
     </div>
 
-    <!-- Flujo mensual -->
     <div class="card p-5">
       <div class="mono text-xs uppercase tracking-widest mb-4" style="color: var(--text3);">Flujo Mensual</div>
       <div class="space-y-3">
@@ -1320,7 +1300,6 @@ function renderFlujo() {
       </div>
     </div>
 
-    <!-- Regla 50/30/20 -->
     <div class="card p-5">
       <div class="mono text-xs uppercase tracking-widest mb-1" style="color: var(--text3);">Benchmark · Regla 50/30/20</div>
       <div class="text-xs mb-4" style="color: var(--text3);">Sobre ingreso neto: ${fmtEur(ingresoNeto)}/mes</div>
@@ -1350,7 +1329,6 @@ function renderFlujo() {
       }).join('')}
     </div>
 
-    <!-- Benchmarks por edad -->
     <div class="card p-5">
       <div class="mono text-xs uppercase tracking-widest mb-4" style="color: var(--text3);">Métricas Ideales · Edad ${p.edad}</div>
       <div class="space-y-4">
@@ -1401,7 +1379,6 @@ function renderFlujo() {
       </div>
     </div>
 
-    <!-- Gráfico distribución -->
     <div class="card p-5">
       <div class="mono text-xs uppercase tracking-widest mb-4" style="color: var(--text3);">Distribución del Gasto Estimado</div>
       <div class="chart-wrap" style="height: 180px;">
@@ -1409,7 +1386,6 @@ function renderFlujo() {
       </div>
     </div>
 
-    <!-- Evolución patrimonial comparativa -->
     <div class="card p-5">
       <div class="mono text-xs uppercase tracking-widest mb-1" style="color: var(--text3);">Patrimonio · Escenario vs Inacción</div>
       <div class="text-xs mb-4" style="color: var(--text3);">Con vs sin aportaciones mensuales</div>
@@ -1498,7 +1474,6 @@ function renderStress() {
       <div class="mono text-xs mt-0.5" style="color: var(--text3);">Escenarios adversos & coste de oportunidad</div>
     </div>
 
-    <!-- Fondo emergencia status -->
     <div class="card p-5">
       <div class="mono text-xs uppercase tracking-widest mb-3" style="color: var(--text3);">Colchón de Seguridad</div>
       <div class="flex items-center gap-4 mb-4">
@@ -1520,7 +1495,6 @@ function renderStress() {
       </div>
     </div>
 
-    <!-- Escenarios paro -->
     <div class="card p-5">
       <div class="mono text-xs uppercase tracking-widest mb-4" style="color: var(--text3);">Escenario · Pérdida de Empleo</div>
       <div class="space-y-3">
@@ -1566,7 +1540,6 @@ function renderStress() {
       </div>
     </div>
 
-    <!-- Caídas de mercado -->
     <div class="card p-5">
       <div class="mono text-xs uppercase tracking-widest mb-4" style="color: var(--text3);">Escenario · Caída de Mercado</div>
       <div class="formula-box mb-4">
@@ -1599,7 +1572,6 @@ function renderStress() {
       </div>
     </div>
 
-    <!-- Inflación choque -->
     <div class="card p-5">
       <div class="mono text-xs uppercase tracking-widest mb-3" style="color: var(--text3);">Choque de Inflación</div>
       <div class="grid grid-cols-2 gap-3">
@@ -1615,7 +1587,6 @@ function renderStress() {
       </div>
     </div>
 
-    <!-- Coste de oportunidad -->
     <div class="card p-5">
       <div class="mono text-xs uppercase tracking-widest mb-1" style="color: var(--text3);">Coste de Oportunidad</div>
       <div class="text-xs mb-4" style="color: var(--text3);">Si invirtieras ese gasto mensual al ${fmtPct(p.rentabilidadInversion)}</div>
@@ -1624,7 +1595,6 @@ function renderStress() {
         Valor futuro de una anualidad mensual
       </div>
 
-      <!-- Calculadora interactiva -->
       <div class="mb-3">
         <label class="mono text-xs" style="color: var(--text3);">Gasto mensual a analizar (€)</label>
         <input type="number" id="co-gasto" value="150" class="w-full mt-1.5 px-3 py-2 text-sm" oninput="updateCO()">
@@ -1659,7 +1629,6 @@ function renderStress() {
       </div>
     </div>
 
-    <!-- Plan de contingencia -->
     <div class="card p-5">
       <div class="mono text-xs uppercase tracking-widest mb-3" style="color: var(--text3);">Plan de Contingencia Recomendado</div>
       <div class="space-y-2">
@@ -1926,8 +1895,16 @@ document.addEventListener('input', e => {
   if (e.target.id === 'co-years' || e.target.id === 'co-gasto') updateCO();
 });
 
-// Post-render init for simulators
+// Post-render init for simulators (SOLUCIONADO)
 const origNavigate = navigate;
+navigate = function(tab) {
+  origNavigate(tab);
+  // Inicializar los valores del simulador si la pestaña correspondiente se abre
+  setTimeout(() => {
+    if (tab === 'cuota' && document.getElementById('sim-years')) updateSim();
+    if (tab === 'stress' && document.getElementById('co-years')) updateCO();
+  }, 50);
+};
 </script>
 </body>
 </html>
