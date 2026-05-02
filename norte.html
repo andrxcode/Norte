@@ -1,0 +1,1933 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Norte — Life & Wealth Planning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg:      #080b10;
+    --bg2:     #0d1117;
+    --bg3:     #111820;
+    --card:    #0f1520;
+    --card2:   #131c28;
+    --border:  #1a2535;
+    --border2: #1f2e42;
+    --cyan:    #00d4ff;
+    --cyan2:   #00b8e6;
+    --cyan-dim:#003d4d;
+    --green:   #00e676;
+    --green2:  #00c853;
+    --green-dim:#002b1a;
+    --red:     #ff3d57;
+    --red2:    #e0002f;
+    --red-dim: #2b0010;
+    --amber:   #ffab00;
+    --amber-dim:#2b2000;
+    --blue:    #448aff;
+    --blue-dim:#0a1a40;
+    --muted:   #2a3a50;
+    --text:    #e2eaf5;
+    --text2:   #6b85a0;
+    --text3:   #3a4f65;
+    --accent:  #00d4ff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    font-size: 14px;
+  }
+
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* Grid lines background — subtle trading aesthetic */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.025) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #app { position: relative; z-index: 1; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  /* Cards — trading terminal style */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: border-color 0.15s;
+  }
+  .card:hover { border-color: var(--border2); }
+
+  .card-glow {
+    border-color: rgba(0,212,255,0.2);
+    box-shadow: 0 0 0 1px rgba(0,212,255,0.05), inset 0 0 32px rgba(0,212,255,0.02);
+  }
+
+  /* Top accent bar */
+  .card-accent-top {
+    border-top: 2px solid var(--cyan);
+  }
+  .card-accent-green { border-top: 2px solid var(--green); }
+  .card-accent-red   { border-top: 2px solid var(--red); }
+  .card-accent-amber { border-top: 2px solid var(--amber); }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    width: 100%;
+  }
+
+  /* Inputs */
+  input[type="number"], input[type="text"], input[type="range"], select {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    border-radius: 6px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+  }
+  input[type="number"]:focus, input[type="text"]:focus, select:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 2px rgba(0,212,255,0.1);
+  }
+  select option { background: var(--bg3); }
+
+  /* Range */
+  input[type="range"] {
+    -webkit-appearance: none;
+    background: var(--border2);
+    height: 3px;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    padding: 0;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--cyan);
+    cursor: pointer;
+    box-shadow: 0 0 6px rgba(0,212,255,0.5);
+  }
+
+  /* Metric value — large numbers */
+  .metric-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  /* Label chip */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .chip-cyan   { background: rgba(0,212,255,0.1);  color: var(--cyan);  border: 1px solid rgba(0,212,255,0.25); }
+  .chip-green  { background: rgba(0,230,118,0.1);  color: var(--green); border: 1px solid rgba(0,230,118,0.25); }
+  .chip-red    { background: rgba(255,61,87,0.1);   color: var(--red);   border: 1px solid rgba(255,61,87,0.25); }
+  .chip-amber  { background: rgba(255,171,0,0.1);  color: var(--amber); border: 1px solid rgba(255,171,0,0.25); }
+  .chip-muted  { background: rgba(42,58,80,0.5);   color: var(--text2); border: 1px solid var(--border2); }
+
+  /* Progress bars — thinner, sharper */
+  .progress-bar {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Section animation */
+  .section-panel { animation: fadeUp 0.25s ease; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Gauge */
+  .gauge-svg { transform: rotate(-90deg); }
+
+  /* Alerts */
+  .alert-warn    { background: var(--red-dim);   border: 1px solid rgba(255,61,87,0.2);  border-radius: 6px; }
+  .alert-ok      { background: var(--green-dim); border: 1px solid rgba(0,230,118,0.2); border-radius: 6px; }
+  .alert-neutral { background: var(--blue-dim);  border: 1px solid rgba(68,138,255,0.2); border-radius: 6px; }
+  .alert-amber   { background: var(--amber-dim); border: 1px solid rgba(255,171,0,0.2);  border-radius: 6px; }
+
+  /* Nav */
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 7px 4px;
+    cursor: pointer;
+    transition: color 0.15s;
+    color: var(--text3);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: none;
+    border: none;
+    font-family: 'Sora', sans-serif;
+  }
+  .nav-item.active { color: var(--cyan); }
+  .nav-item.active svg { filter: drop-shadow(0 0 4px rgba(0,212,255,0.6)); }
+  .nav-item svg { margin-bottom: 3px; }
+
+  /* Chart */
+  .chart-wrap { position: relative; width: 100%; }
+
+  /* Scenario cards — terminal side border */
+  .scenario-card {
+    border-left: 2px solid;
+    padding: 10px 14px;
+    border-radius: 0 6px 6px 0;
+    background: var(--bg3);
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(6px);
+    z-index: 1000;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-sheet {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-bottom: none;
+    border-radius: 16px 16px 0 0;
+    padding: 20px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 88vh;
+    overflow-y: auto;
+    animation: slideUp 0.28s cubic-bezier(0.4,0,0.2,1);
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+  .modal-handle {
+    width: 36px; height: 3px;
+    background: var(--border2);
+    border-radius: 2px;
+    margin: 0 auto 16px;
+  }
+
+  /* Formula box */
+  .formula-box {
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    border-left: 2px solid var(--cyan);
+    border-radius: 0 6px 6px 0;
+    padding: 10px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text2);
+    line-height: 1.9;
+  }
+
+  /* Section label */
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+  }
+
+  /* Ticker row */
+  .ticker-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .ticker-row:last-child { border-bottom: none; }
+
+  /* Tabs scroll */
+  .tabs-scroll {
+    display: flex; gap: 4px;
+    overflow-x: auto; padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+  .tabs-scroll::-webkit-scrollbar { display: none; }
+
+  /* Pulse dot */
+  .pulse-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 0 0 rgba(0,230,118,0.4);
+    animation: pulse-anim 2s ease-out infinite;
+  }
+  @keyframes pulse-anim {
+    0%   { box-shadow: 0 0 0 0 rgba(0,230,118,0.4); }
+    70%  { box-shadow: 0 0 0 6px rgba(0,230,118,0); }
+    100% { box-shadow: 0 0 0 0 rgba(0,230,118,0); }
+  }
+
+  /* North logo pulse */
+  .logo-dot {
+    display: inline-block; width: 5px; height: 5px;
+    border-radius: 50%; background: var(--cyan);
+    margin-left: 3px; margin-bottom: 2px;
+    box-shadow: 0 0 8px var(--cyan);
+    animation: logo-pulse 3s ease-in-out infinite;
+    vertical-align: middle;
+  }
+  @keyframes logo-pulse {
+    0%,100% { opacity: 1; box-shadow: 0 0 8px var(--cyan); }
+    50% { opacity: 0.3; box-shadow: none; }
+  }
+
+  /* Skeleton */
+  .skeleton {
+    background: linear-gradient(90deg, var(--border) 25%, var(--border2) 50%, var(--border) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 3px;
+  }
+  @keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Tab btn */
+  .tab-btn {
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text3);
+    background: transparent;
+    border: none;
+    white-space: nowrap;
+    font-family: 'Sora', sans-serif;
+  }
+  .tab-btn.active {
+    background: rgba(0,212,255,0.08);
+    color: var(--cyan);
+    border: 1px solid rgba(0,212,255,0.2);
+  }
+  .tab-btn:hover:not(.active) { color: var(--text2); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!--  APP SHELL                                                   -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
+<div id="app" class="flex flex-col min-h-screen pb-20">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-50 px-5 py-4 flex items-center justify-between"
+          style="background: rgba(10,10,15,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border);">
+    <div>
+      <div class="serif font-black text-xl tracking-tight" style="color: var(--gold2);">
+        <span class="north-star">Norte</span>
+      </div>
+      <div class="mono text-xs mt-0.5" style="color: var(--text3);">Life & Wealth Engine</div>
+    </div>
+    <button onclick="openSetup()" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs mono transition-colors"
+            style="background: var(--bg3); border: 1px solid var(--border2); color: var(--text2);">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+      Perfil
+    </button>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main id="main-content" class="flex-1 px-4 py-4 max-w-lg mx-auto w-full">
+    <!-- Dynamic content injected here -->
+  </main>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 flex"
+     style="background: rgba(10,10,15,0.97); backdrop-filter: blur(16px); border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom);">
+  <button class="nav-item active" onclick="navigate('dashboard')" id="nav-dashboard">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+    </svg>
+    Dashboard
+  </button>
+  <button class="nav-item" onclick="navigate('metas')" id="nav-metas">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+    </svg>
+    Metas
+  </button>
+  <button class="nav-item" onclick="navigate('cuota')" id="nav-cuota">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+    </svg>
+    Cuota
+  </button>
+  <button class="nav-item" onclick="navigate('flujo')" id="nav-flujo">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+    </svg>
+    Flujo
+  </button>
+  <button class="nav-item" onclick="navigate('stress')" id="nav-stress">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+      <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+    Stress
+  </button>
+</nav>
+
+<!-- SETUP MODAL -->
+<div id="setup-modal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeSetup()">
+  <div class="modal-sheet">
+    <div class="flex items-center justify-between mb-5">
+      <div class="serif font-bold text-lg" style="color: var(--gold2);">Perfil Financiero</div>
+      <button onclick="closeSetup()" style="color: var(--text3); background:none; border:none; cursor:pointer;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div id="setup-form"></div>
+    <button onclick="saveProfile()" class="w-full mt-5 py-3 rounded-xl font-semibold text-sm transition-all"
+            style="background: var(--gold); color: var(--bg); letter-spacing: 0.05em;">
+      GUARDAR PERFIL
+    </button>
+  </div>
+</div>
+
+<!-- MILESTONE MODAL -->
+<div id="milestone-modal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeMilestone()">
+  <div class="modal-sheet">
+    <div class="flex items-center justify-between mb-5">
+      <div class="serif font-bold text-lg" style="color: var(--gold2);">Nuevo Hito</div>
+      <button onclick="closeMilestone()" style="color: var(--text3); background:none; border:none; cursor:pointer;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div id="milestone-form"></div>
+    <button onclick="saveMilestone()" class="w-full mt-5 py-3 rounded-xl font-semibold text-sm"
+            style="background: var(--gold); color: var(--bg);">
+      AÑADIR HITO
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!--  JAVASCRIPT ENGINE                                           -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ──────────────────────────────────────────────
+//  DATA SCHEMA & STATE
+// ──────────────────────────────────────────────
+const DEFAULT_PROFILE = {
+  nombre: 'Usuario',
+  edad: 30,
+  edadJubilacion: 65,
+  ingresosMensuales: 3500,
+  gastosMensuales: 2200,
+  ahorroActual: 15000,
+  deudas: 0,
+  tasaImpuestos: 24,       // % IRPF marginal
+  inflacion: 3.0,          // % anual
+  rentabilidadInversion: 7.0, // % real esperada (cartera diversificada)
+  rentabilidadConservadora: 3.5,
+  rentabilidadAgresiva: 10.0,
+  gastoJubilacion: 75,     // % del gasto actual en jubilación
+  esperanzaVida: 90,
+};
+
+const DEFAULT_MILESTONES = [
+  {
+    id: 1, nombre: 'Vivienda', tipo: 'compra',
+    importeHoy: 350000, aniosHasta: 5,
+    ajusteInflacion: true, gastosExtra: 12, // % (notaría, impuestos, reforma)
+    hipotecaPct: 70, // % financiado
+    completado: false,
+  },
+  {
+    id: 2, nombre: 'Jubilación', tipo: 'jubilacion',
+    importeHoy: 0, aniosHasta: 35,
+    ajusteInflacion: true, gastosExtra: 0,
+    hipotecaPct: 0,
+    completado: false,
+  },
+  {
+    id: 3, nombre: 'Fondo Emergencia', tipo: 'fondo',
+    importeHoy: 13200, aniosHasta: 1, // 6 meses gastos
+    ajusteInflacion: false, gastosExtra: 0,
+    hipotecaPct: 0,
+    completado: false,
+  }
+];
+
+// App State
+let state = {
+  profile: { ...DEFAULT_PROFILE },
+  milestones: [...DEFAULT_MILESTONES],
+  activeTab: 'dashboard',
+  editingMilestone: null,
+  charts: {},
+};
+
+// ──────────────────────────────────────────────
+//  PERSISTENCE
+// ──────────────────────────────────────────────
+function save() {
+  localStorage.setItem('norte_profile', JSON.stringify(state.profile));
+  localStorage.setItem('norte_milestones', JSON.stringify(state.milestones));
+}
+
+function load() {
+  const p = localStorage.getItem('norte_profile');
+  const m = localStorage.getItem('norte_milestones');
+  if (p) state.profile = { ...DEFAULT_PROFILE, ...JSON.parse(p) };
+  if (m) state.milestones = JSON.parse(m);
+}
+
+// ──────────────────────────────────────────────
+//  CORE FINANCIAL ENGINE
+// ──────────────────────────────────────────────
+
+// Valor futuro ajustado por inflación
+function futureValue(presentValue, inflationRate, years) {
+  return presentValue * Math.pow(1 + inflationRate / 100, years);
+}
+
+// Pago mensual de cuota (PMT) — aportación a interés compuesto
+// FV = PMT × [(1+r)^n - 1] / r  →  PMT = FV × r / [(1+r)^n - 1]
+function pmt(fv, annualRate, years, currentSavings = 0) {
+  if (years <= 0) return 0;
+  const r = annualRate / 100 / 12;
+  const n = years * 12;
+  if (r === 0) return Math.max(0, (fv - currentSavings) / n);
+  const fvSavings = currentSavings * Math.pow(1 + r, n); // Crecimiento del ahorro actual
+  const netFV = Math.max(0, fv - fvSavings);
+  return netFV * r / (Math.pow(1 + r, n) - 1);
+}
+
+// Valor futuro de aportaciones periódicas
+function fvAnnuity(monthlyPmt, annualRate, years) {
+  const r = annualRate / 100 / 12;
+  const n = years * 12;
+  if (r === 0) return monthlyPmt * n;
+  return monthlyPmt * (Math.pow(1 + r, n) - 1) / r;
+}
+
+// Capital necesario para jubilación (método anualidad)
+// Capital = Gasto_anual × [1 - (1+r)^-n] / r
+function capitalJubilacion(gastoMensual, annualRate, years) {
+  const r = annualRate / 100 / 12;
+  const n = years * 12;
+  if (r === 0) return gastoMensual * n;
+  return gastoMensual * (1 - Math.pow(1 + r, -n)) / r;
+}
+
+// Cálculo completo de un milestone
+function calcMilestone(m, profile) {
+  const { inflacion, rentabilidadInversion, gastosMensuales, gastoJubilacion,
+          esperanzaVida, edadJubilacion, edad, ahorroActual, tasaImpuestos } = profile;
+  const years = m.aniosHasta;
+
+  let importeFuturo, capital, ahorroUsado;
+
+  if (m.tipo === 'jubilacion') {
+    // Gasto mensual en jubilación
+    const gastoBaseJub = gastosMensuales * (gastoJubilacion / 100);
+    const gastoJubFuturo = m.ajusteInflacion
+      ? futureValue(gastoBaseJub, inflacion, years)
+      : gastoBaseJub;
+    const aniosRetiro = esperanzaVida - edadJubilacion;
+    // Rentabilidad real en retiro (conservadora)
+    const rentRetiro = profile.rentabilidadConservadora;
+    capital = capitalJubilacion(gastoJubFuturo, rentRetiro, aniosRetiro);
+    importeFuturo = capital;
+    // Ahorro usado: fracción proporcional al tiempo hasta jubilación
+    ahorroUsado = ahorroActual * 0.5; // 50% del ahorro se asigna a jubilación
+  } else {
+    // Valor futuro del hito
+    const base = m.importeHoy * (1 + m.gastosExtra / 100);
+    importeFuturo = m.ajusteInflacion ? futureValue(base, inflacion, years) : base;
+    // Si es compra de vivienda, descontar la parte hipotecada
+    capital = m.tipo === 'compra'
+      ? importeFuturo * (1 - m.hipotecaPct / 100)  // Solo la entrada + gastos no hipotecables
+      : importeFuturo;
+    ahorroUsado = m.tipo === 'fondo' ? 0 : ahorroActual * 0.3;
+  }
+
+  // Aportación mensual necesaria (después de impuestos)
+  const pmtBruto = pmt(capital, rentabilidadInversion, years, Math.min(ahorroUsado, capital * 0.8));
+  // Ajuste fiscal: la aportación sale de renta neta
+  const pmtNeto = pmtBruto; // ya es sobre renta disponible
+
+  return {
+    importeFuturo: Math.round(importeFuturo),
+    capital: Math.round(capital),
+    pmtMensual: Math.round(pmtBruto),
+    years,
+    ahorroUsado: Math.round(ahorroUsado),
+  };
+}
+
+// Métricas de benchmarking por edad
+function benchmarks(profile) {
+  const { edad, ingresosMensuales, ahorroActual } = profile;
+  const ingresoAnual = ingresosMensuales * 12;
+
+  // Regla de thumb: ahorro acumulado ideal = (edad - 22) × 0.15 × ingreso anual
+  // Con mínimo de 6 meses de emergencia
+  const ahorroIdeal = Math.max(
+    profile.gastosMensuales * 6,
+    (edad - 22) * 0.15 * ingresoAnual
+  );
+
+  // Tasa de ahorro ideal: 20% ingreso neto como mínimo
+  const ingresoNeto = ingresosMensuales * (1 - profile.tasaImpuestos / 100);
+  const tasaAhorroIdeal = 20;
+  const ahorroMensualIdeal = ingresoNeto * (tasaAhorroIdeal / 100);
+
+  // Ahorro real
+  const capacidadAhorro = profile.ingresosMensuales - profile.gastosMensuales;
+  const tasaAhorroReal = (capacidadAhorro / ingresosMensuales) * 100;
+
+  // Ratio deuda/ingreso
+  const ratioDI = profile.deudas / ingresoAnual;
+
+  // Patrimonio neto estimado
+  const patrimonioNeto = ahorroActual - profile.deudas;
+
+  return {
+    ahorroIdeal: Math.round(ahorroIdeal),
+    ahorroMensualIdeal: Math.round(ahorroMensualIdeal),
+    capacidadAhorro,
+    tasaAhorroReal: Math.round(tasaAhorroReal * 10) / 10,
+    tasaAhorroIdeal,
+    ratioDI: Math.round(ratioDI * 100) / 100,
+    patrimonioNeto,
+    scoreSalud: calcHealthScore(profile),
+  };
+}
+
+function calcHealthScore(profile) {
+  let score = 0;
+  const cap = profile.ingresosMensuales - profile.gastosMensuales;
+  const tasa = cap / profile.ingresosMensuales;
+
+  // Tasa de ahorro (30pts)
+  if (tasa >= 0.3) score += 30;
+  else if (tasa >= 0.2) score += 22;
+  else if (tasa >= 0.1) score += 12;
+  else if (tasa > 0) score += 5;
+
+  // Fondo emergencia (25pts)
+  const fondoMeses = profile.ahorroActual / profile.gastosMensuales;
+  if (fondoMeses >= 6) score += 25;
+  else if (fondoMeses >= 3) score += 15;
+  else if (fondoMeses >= 1) score += 7;
+
+  // Deuda (20pts)
+  const ratioDeuda = profile.deudas / (profile.ingresosMensuales * 12);
+  if (ratioDeuda === 0) score += 20;
+  else if (ratioDeuda < 0.5) score += 14;
+  else if (ratioDeuda < 1) score += 7;
+
+  // Ratio ahorro / ingreso anual (15pts)
+  const ratioAI = profile.ahorroActual / (profile.ingresosMensuales * 12);
+  if (ratioAI >= 1) score += 15;
+  else if (ratioAI >= 0.5) score += 10;
+  else if (ratioAI >= 0.2) score += 5;
+
+  // Plazo hasta jubilación (10pts) — tiempo para actuar
+  const aniosJub = profile.edadJubilacion - profile.edad;
+  if (aniosJub >= 30) score += 10;
+  else if (aniosJub >= 20) score += 7;
+  else if (aniosJub >= 10) score += 3;
+
+  return Math.min(100, score);
+}
+
+// Proyección de patrimonio mensual
+function proyeccionPatrimonio(profile, months = 360) {
+  const r = profile.rentabilidadInversion / 100 / 12;
+  const ahorro = profile.ingresosMensuales - profile.gastosMensuales;
+  const data = [];
+  let capital = profile.ahorroActual;
+  for (let i = 0; i <= months; i += 12) {
+    data.push({ mes: i, valor: Math.round(capital) });
+    for (let j = 0; j < 12; j++) {
+      capital = capital * (1 + r) + Math.max(0, ahorro);
+    }
+  }
+  return data;
+}
+
+// Stress tests
+function stressTests(profile) {
+  const { ingresosMensuales, gastosMensuales, ahorroActual, rentabilidadInversion } = profile;
+  const ahorro = Math.max(0, ingresosMensuales - gastosMensuales);
+
+  // 1. Paro 6 meses
+  const impactoParo6m = gastosMensuales * 6;
+  const mesesFondo = ahorroActual / gastosMensuales;
+
+  // 2. Caída mercado 30%
+  const perdidaMercado30 = ahorroActual * 0.3;
+  const recuperacion30 = Math.log(1 / 0.7) / Math.log(1 + rentabilidadInversion / 100); // años para recuperar
+
+  // 3. Caída mercado 50%
+  const perdidaMercado50 = ahorroActual * 0.5;
+  const recuperacion50 = Math.log(1 / 0.5) / Math.log(1 + rentabilidadInversion / 100);
+
+  // 4. Inflación dispara +2%
+  const extraInflacion = profile.gastosMensuales * 0.02 * 12; // impacto anual
+
+  // 5. Pérdida de empleo 12 meses
+  const impactoParo12m = gastosMensuales * 12;
+  const coverageParo12m = (ahorroActual / impactoParo12m) * 100;
+
+  return {
+    mesesFondo: Math.round(mesesFondo * 10) / 10,
+    impactoParo6m,
+    impactoParo12m,
+    coverageParo6m: Math.min(100, Math.round((ahorroActual / impactoParo6m) * 100)),
+    coverageParo12m: Math.min(100, Math.round(coverageParo12m)),
+    perdidaMercado30,
+    recuperacion30: Math.round(recuperacion30 * 10) / 10,
+    perdidaMercado50,
+    recuperacion50: Math.round(recuperacion50 * 10) / 10,
+    extraInflacion: Math.round(extraInflacion),
+  };
+}
+
+// Coste de oportunidad
+function costeOportunidad(gasto, years, rate) {
+  // Si en vez de gastar ese dinero se invirtiese
+  return fvAnnuity(gasto, rate, years);
+}
+
+// ──────────────────────────────────────────────
+//  FORMATTERS
+// ──────────────────────────────────────────────
+const fmt = n => new Intl.NumberFormat('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n);
+const fmtEur = n => '€' + fmt(Math.abs(n));
+const fmtPct = n => n.toFixed(1) + '%';
+const fmtSign = n => (n >= 0 ? '+' : '') + fmtEur(n);
+const scoreColor = s => s >= 70 ? 'var(--green)' : s >= 45 ? 'var(--gold)' : 'var(--red)';
+const scoreLabel = s => s >= 70 ? 'Sólido' : s >= 45 ? 'En curso' : 'Crítico';
+
+// ──────────────────────────────────────────────
+//  NAVIGATION
+// ──────────────────────────────────────────────
+function navigate(tab) {
+  state.activeTab = tab;
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('nav-' + tab)?.classList.add('active');
+  render();
+}
+
+function render() {
+  // Destroy existing charts
+  Object.values(state.charts).forEach(c => { try { c.destroy(); } catch(e){} });
+  state.charts = {};
+
+  const c = document.getElementById('main-content');
+  c.innerHTML = '';
+
+  switch(state.activeTab) {
+    case 'dashboard': c.innerHTML = renderDashboard(); break;
+    case 'metas':     c.innerHTML = renderMetas();     break;
+    case 'cuota':     c.innerHTML = renderCuota();     break;
+    case 'flujo':     c.innerHTML = renderFlujo();     break;
+    case 'stress':    c.innerHTML = renderStress();    break;
+  }
+
+  // Init charts after DOM render
+  requestAnimationFrame(() => {
+    switch(state.activeTab) {
+      case 'dashboard': initDashboardCharts(); break;
+      case 'flujo':     initFlujoCharts();     break;
+      case 'stress':    initStressCharts();    break;
+    }
+  });
+}
+
+// ──────────────────────────────────────────────
+//  RENDER: DASHBOARD
+// ──────────────────────────────────────────────
+function renderDashboard() {
+  const p = state.profile;
+  const bench = benchmarks(p);
+  const score = bench.scoreSalud;
+  const sc = scoreColor(score);
+  const totalPmt = state.milestones.filter(m => !m.completado)
+    .reduce((sum, m) => sum + calcMilestone(m, p).pmtMensual, 0);
+  const disponible = bench.capacidadAhorro - totalPmt;
+
+  // Patrimonio proyección
+  const proj = proyeccionPatrimonio(p, 360);
+  const proj10 = proj.find(x => x.mes === 120)?.valor || 0;
+  const proj20 = proj.find(x => x.mes === 240)?.valor || 0;
+  const proj30 = proj.find(x => x.mes === 360)?.valor || 0;
+
+  return `<div class="section-panel space-y-4">
+
+    <!-- Saludo + Score -->
+    <div class="card card-glow p-5">
+      <div class="flex items-start justify-between">
+        <div>
+          <div class="text-xs mono uppercase tracking-widest mb-1" style="color: var(--text3);">Salud Financiera</div>
+          <div class="serif font-black text-5xl" style="color: ${sc}; letter-spacing: -0.03em;">${score}</div>
+          <div class="mono text-xs mt-1" style="color: ${sc};">${scoreLabel(score)}</div>
+        </div>
+        <div style="position: relative; width: 80px; height: 80px;">
+          <svg width="80" height="80" class="gauge-svg">
+            <circle cx="40" cy="40" r="32" fill="none" stroke="var(--border2)" stroke-width="6"/>
+            <circle cx="40" cy="40" r="32" fill="none" stroke="${sc}" stroke-width="6"
+              stroke-dasharray="${score * 2.01} 201"
+              stroke-linecap="round" style="transition: stroke-dasharray 0.8s ease;"/>
+          </svg>
+          <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${sc}" stroke-width="1.5">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="gold-line mt-4 mb-3"></div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <div class="mono text-xs" style="color: var(--text3);">Ahorro mensual</div>
+          <div class="metric-value text-xl" style="color: ${bench.capacidadAhorro >= 0 ? 'var(--green)' : 'var(--red)'};">
+            ${fmtEur(bench.capacidadAhorro)}
+          </div>
+        </div>
+        <div>
+          <div class="mono text-xs" style="color: var(--text3);">Tasa ahorro</div>
+          <div class="metric-value text-xl" style="color: ${bench.tasaAhorroReal >= 20 ? 'var(--green)' : bench.tasaAhorroReal >= 10 ? 'var(--gold)' : 'var(--red)'};">
+            ${fmtPct(bench.tasaAhorroReal)}
+          </div>
+        </div>
+        <div>
+          <div class="mono text-xs" style="color: var(--text3);">Patrimonio neto</div>
+          <div class="metric-value text-xl">${fmtEur(bench.patrimonioNeto)}</div>
+        </div>
+        <div>
+          <div class="mono text-xs" style="color: var(--text3);">Fondo emergencia</div>
+          <div class="metric-value text-xl" style="color: ${p.ahorroActual >= p.gastosMensuales * 6 ? 'var(--green)' : 'var(--gold)'};">
+            ${Math.round(p.ahorroActual / p.gastosMensuales)} meses
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gap Analysis -->
+    <div class="card p-5">
+      <div class="text-xs mono uppercase tracking-widest mb-3" style="color: var(--text3);">Gap · Cuota Diana Total</div>
+      <div class="flex items-center justify-between mb-2">
+        <div>
+          <div class="mono text-xs" style="color: var(--text3);">Cuota necesaria</div>
+          <div class="metric-value text-2xl" style="color: var(--gold2);">${fmtEur(totalPmt)}/mes</div>
+        </div>
+        <div class="text-right">
+          <div class="mono text-xs" style="color: var(--text3);">Capacidad actual</div>
+          <div class="metric-value text-2xl">${fmtEur(bench.capacidadAhorro)}/mes</div>
+        </div>
+      </div>
+      <div class="progress-bar mt-3">
+        <div class="progress-fill" style="width: ${Math.min(100, bench.capacidadAhorro > 0 ? (totalPmt / bench.capacidadAhorro) * 100 : 100)}%; background: ${totalPmt <= bench.capacidadAhorro ? 'var(--green)' : 'var(--red)'}"></div>
+      </div>
+      <div class="flex justify-between mt-2">
+        <div class="mono text-xs" style="color: var(--text3);">${fmtPct(totalPmt > 0 && bench.capacidadAhorro > 0 ? (totalPmt/bench.capacidadAhorro)*100 : 0)} de capacidad comprometida</div>
+        <div class="mono text-xs" style="color: ${disponible >= 0 ? 'var(--green)' : 'var(--red)'};">
+          ${disponible >= 0 ? '+' : ''}${fmtEur(disponible)} libre
+        </div>
+      </div>
+    </div>
+
+    <!-- Proyección patrimonio -->
+    <div class="card p-5">
+      <div class="text-xs mono uppercase tracking-widest mb-1" style="color: var(--text3);">Proyección Patrimonial</div>
+      <div class="text-xs mb-4" style="color: var(--text3);">Interés compuesto @ ${fmtPct(p.rentabilidadInversion)}</div>
+      <div class="chart-wrap" style="height: 140px;">
+        <canvas id="chart-proj"></canvas>
+      </div>
+      <div class="grid grid-cols-3 gap-2 mt-4">
+        ${[['10 años', proj10], ['20 años', proj20], ['30 años', proj30]].map(([l, v]) => `
+          <div class="text-center">
+            <div class="mono text-xs" style="color: var(--text3);">${l}</div>
+            <div class="serif font-bold text-sm" style="color: var(--gold2);">${fmtEur(v)}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- Hitos activos -->
+    <div class="card p-5">
+      <div class="flex items-center justify-between mb-3">
+        <div class="text-xs mono uppercase tracking-widest" style="color: var(--text3);">Hitos Activos</div>
+        <button onclick="navigate('metas')" class="mono text-xs" style="color: var(--gold); background:none; border:none; cursor:pointer;">Ver todos →</button>
+      </div>
+      ${state.milestones.filter(m => !m.completado).slice(0,3).map(m => {
+        const c = calcMilestone(m, p);
+        return `<div class="flex items-center justify-between py-2.5" style="border-bottom: 1px solid var(--border);">
+          <div>
+            <div class="font-medium text-sm">${m.nombre}</div>
+            <div class="mono text-xs mt-0.5" style="color: var(--text3);">${m.aniosHasta} años · ${fmtEur(c.importeFuturo)}</div>
+          </div>
+          <div class="text-right">
+            <div class="mono text-sm" style="color: var(--gold2);">${fmtEur(c.pmtMensual)}/mes</div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+
+  </div>`;
+}
+
+function initDashboardCharts() {
+  const p = state.profile;
+  const proj = proyeccionPatrimonio(p, 360);
+
+  const ctx = document.getElementById('chart-proj');
+  if (!ctx) return;
+
+  state.charts.proj = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: proj.map(x => x.mes === 0 ? 'Hoy' : `${x.mes/12}a`),
+      datasets: [{
+        data: proj.map(x => x.valor),
+        borderColor: '#c9a84c',
+        borderWidth: 2,
+        backgroundColor: 'rgba(201,168,76,0.08)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 3,
+        pointBackgroundColor: '#c9a84c',
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        callbacks: { label: ctx => '€' + fmt(ctx.raw) },
+        backgroundColor: '#14141e', borderColor: '#1e1e2e', borderWidth: 1,
+        titleColor: '#9090b0', bodyColor: '#e8e8f0',
+      }},
+      scales: {
+        x: { grid: { color: 'rgba(30,30,46,0.5)' }, ticks: { color: '#5a5a7a', font: { family: 'DM Mono', size: 10 }}},
+        y: { grid: { color: 'rgba(30,30,46,0.5)' }, ticks: { color: '#5a5a7a', font: { family: 'DM Mono', size: 10 },
+          callback: v => '€' + (v >= 1000 ? (v/1000).toFixed(0) + 'k' : v) }},
+      }
+    }
+  });
+}
+
+// ──────────────────────────────────────────────
+//  RENDER: METAS E INFLACIÓN
+// ──────────────────────────────────────────────
+function renderMetas() {
+  const p = state.profile;
+  return `<div class="section-panel space-y-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <div class="serif font-bold text-xl">Hitos</div>
+        <div class="mono text-xs mt-0.5" style="color: var(--text3);">Inflación: ${fmtPct(p.inflacion)} · Rentab: ${fmtPct(p.rentabilidadInversion)}</div>
+      </div>
+      <button onclick="openMilestone()" class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold"
+              style="background: var(--gold); color: var(--bg);">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nuevo
+      </button>
+    </div>
+
+    <!-- Macro inflación -->
+    <div class="card p-4">
+      <div class="mono text-xs uppercase tracking-widest mb-3" style="color: var(--text3);">Motor de Inflación</div>
+      <div class="formula-box">
+        VF = VP × (1 + i)^n<br>
+        donde i = ${fmtPct(p.inflacion)} · n = años hasta hito
+      </div>
+      <div class="grid grid-cols-3 gap-3 mt-3">
+        ${[1,5,10,15,20,30].map(y => {
+          const factor = Math.pow(1 + p.inflacion/100, y);
+          return `<div class="text-center p-2 rounded-lg" style="background: var(--bg3);">
+            <div class="mono text-xs" style="color: var(--text3);">${y}a</div>
+            <div class="serif font-bold text-sm" style="color: var(--gold2);">×${factor.toFixed(2)}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <!-- Milestones -->
+    ${state.milestones.map(m => {
+      const c = calcMilestone(m, p);
+      const pct = m.completado ? 100 : Math.min(100, Math.round((p.ahorroActual / c.capital) * 100));
+      const color = m.completado ? 'var(--green)' : m.tipo === 'jubilacion' ? 'var(--blue)' : m.tipo === 'compra' ? 'var(--gold)' : 'var(--green)';
+      return `
+      <div class="card p-5 ${m.completado ? 'opacity-50' : ''}">
+        <div class="flex items-start justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-base"
+                 style="background: ${color}18; color: ${color};">
+              ${m.tipo === 'jubilacion' ? '☀' : m.tipo === 'compra' ? '⌂' : m.tipo === 'fondo' ? '⊕' : '◈'}
+            </div>
+            <div>
+              <div class="font-semibold text-sm">${m.nombre}</div>
+              <div class="mono text-xs" style="color: var(--text3);">${m.aniosHasta} años · ${m.tipo}</div>
+            </div>
+          </div>
+          <div class="flex gap-1">
+            <button onclick="toggleMilestone(${m.id})" class="p-1.5 rounded-lg" style="background: var(--bg3); border: none; cursor:pointer; color: ${m.completado ? 'var(--green)' : 'var(--text3)'};">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+            <button onclick="editMilestone(${m.id})" class="p-1.5 rounded-lg" style="background: var(--bg3); border: none; cursor:pointer; color: var(--text3);">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button onclick="deleteMilestone(${m.id})" class="p-1.5 rounded-lg" style="background: var(--bg3); border: none; cursor:pointer; color: var(--red);">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div class="p-3 rounded-lg" style="background: var(--bg3);">
+            <div class="mono text-xs mb-1" style="color: var(--text3);">Valor hoy</div>
+            <div class="serif font-bold">${fmtEur(m.importeHoy || 0)}</div>
+          </div>
+          <div class="p-3 rounded-lg" style="background: var(--bg3);">
+            <div class="mono text-xs mb-1" style="color: var(--text3);">Valor futuro</div>
+            <div class="serif font-bold" style="color: ${color};">${fmtEur(c.importeFuturo)}</div>
+          </div>
+          <div class="p-3 rounded-lg" style="background: var(--bg3);">
+            <div class="mono text-xs mb-1" style="color: var(--text3);">Capital necesario</div>
+            <div class="serif font-bold" style="color: var(--gold2);">${fmtEur(c.capital)}</div>
+          </div>
+          <div class="p-3 rounded-lg" style="background: var(--bg3);">
+            <div class="mono text-xs mb-1" style="color: var(--text3);">Cuota diana/mes</div>
+            <div class="serif font-bold" style="color: var(--gold);">${fmtEur(c.pmtMensual)}</div>
+          </div>
+        </div>
+
+        ${m.gastosExtra > 0 ? `
+        <div class="mono text-xs px-3 py-1.5 rounded-lg mb-3" style="background: rgba(201,168,76,0.06); color: var(--gold); border: 1px solid rgba(201,168,76,0.15);">
+          ⚡ Gastos extra ${m.gastosExtra}% incluidos · +${fmtEur(m.importeHoy * m.gastosExtra / 100)}
+        </div>` : ''}
+
+        <div class="flex justify-between text-xs mono mb-1" style="color: var(--text3);">
+          <span>Progreso ahorro actual</span><span>${pct}%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: ${pct}%; background: ${color};"></div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+// ──────────────────────────────────────────────
+//  RENDER: CUOTA DIANA
+// ──────────────────────────────────────────────
+function renderCuota() {
+  const p = state.profile;
+  const milestones = state.milestones.filter(m => !m.completado);
+  const calcs = milestones.map(m => ({ m, c: calcMilestone(m, p) }));
+  const totalPmt = calcs.reduce((s, { c }) => s + c.pmtMensual, 0);
+  const cap = p.ingresosMensuales - p.gastosMensuales;
+  const ingresoNeto = p.ingresosMensuales * (1 - p.tasaImpuestos / 100);
+  const tasaEfectiva = totalPmt / ingresoNeto * 100;
+
+  // Escenarios de rentabilidad
+  const rates = [
+    { label: 'Conservador', r: p.rentabilidadConservadora, color: 'var(--blue)' },
+    { label: 'Base', r: p.rentabilidadInversion, color: 'var(--gold)' },
+    { label: 'Agresivo', r: p.rentabilidadAgresiva, color: 'var(--green)' },
+  ];
+
+  return `<div class="section-panel space-y-4">
+    <div>
+      <div class="serif font-bold text-xl">Cuota Diana</div>
+      <div class="mono text-xs mt-0.5" style="color: var(--text3);">Ingeniería inversa de aportación mensual</div>
+    </div>
+
+    <!-- Fórmula -->
+    <div class="card p-4">
+      <div class="mono text-xs uppercase tracking-widest mb-3" style="color: var(--text3);">Algoritmo PMT</div>
+      <div class="formula-box">
+        PMT = (FV - CA×(1+r)^n) × r<br>
+        ────────────────────────────<br>
+              (1+r)^n − 1<br><br>
+        donde:<br>
+        FV = Capital objetivo (futuro)<br>
+        CA = Ahorro actual<br>
+        r  = Rentabilidad mensual<br>
+        n  = Meses hasta la meta
+      </div>
+    </div>
+
+    <!-- Resumen total -->
+    <div class="card card-glow p-5">
+      <div class="mono text-xs uppercase tracking-widest mb-3" style="color: var(--text3);">Cuota Total · Todos los Hitos</div>
+      <div class="flex items-end gap-3 mb-4">
+        <div class="metric-value text-5xl" style="color: var(--gold2); letter-spacing: -0.03em;">${fmtEur(totalPmt)}</div>
+        <div class="mono text-sm mb-1.5" style="color: var(--text3);">/mes</div>
+      </div>
+      <div class="grid grid-cols-3 gap-3 mb-3">
+        <div>
+          <div class="mono text-xs" style="color: var(--text3);">% ingreso neto</div>
+          <div class="metric-value text-lg" style="color: ${tasaEfectiva > 40 ? 'var(--red)' : tasaEfectiva > 25 ? 'var(--gold)' : 'var(--green)'};">
+            ${fmtPct(tasaEfectiva)}
+          </div>
+        </div>
+        <div>
+          <div class="mono text-xs" style="color: var(--text3);">Capacidad actual</div>
+          <div class="metric-value text-lg">${fmtEur(cap)}</div>
+        </div>
+        <div>
+          <div class="mono text-xs" style="color: var(--text3);">Gap</div>
+          <div class="metric-value text-lg" style="color: ${cap - totalPmt >= 0 ? 'var(--green)' : 'var(--red)'};">
+            ${fmtSign(cap - totalPmt)}
+          </div>
+        </div>
+      </div>
+      ${cap < totalPmt ? `
+      <div class="alert-warn p-3 mt-2">
+        <div class="mono text-xs" style="color: var(--red);">⚠ Déficit de ${fmtEur(totalPmt - cap)}/mes — revisa tus metas o aumenta ingresos</div>
+      </div>` : `
+      <div class="alert-ok p-3 mt-2">
+        <div class="mono text-xs" style="color: var(--green);">✓ Superávit de ${fmtEur(cap - totalPmt)}/mes — considera inversión adicional</div>
+      </div>`}
+    </div>
+
+    <!-- Desglose por hito -->
+    <div class="card p-5">
+      <div class="mono text-xs uppercase tracking-widest mb-4" style="color: var(--text3);">Desglose por Hito</div>
+      ${calcs.map(({ m, c }) => {
+        const pct = totalPmt > 0 ? (c.pmtMensual / totalPmt) * 100 : 0;
+        return `
+        <div class="mb-4">
+          <div class="flex justify-between items-start mb-1.5">
+            <div>
+              <div class="font-medium text-sm">${m.nombre}</div>
+              <div class="mono text-xs" style="color: var(--text3);">${m.aniosHasta}a · ${fmtPct(p.rentabilidadInversion)} · Meta: ${fmtEur(c.capital)}</div>
+            </div>
+            <div class="text-right">
+              <div class="mono font-medium" style="color: var(--gold2);">${fmtEur(c.pmtMensual)}</div>
+              <div class="mono text-xs" style="color: var(--text3);">${fmtPct(pct)}</div>
+            </div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${pct}%; background: var(--gold);"></div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <!-- Sensibilidad por rentabilidad -->
+    <div class="card p-5">
+      <div class="mono text-xs uppercase tracking-widest mb-4" style="color: var(--text3);">Sensibilidad · Escenarios de Rentabilidad</div>
+      ${milestones.map(m => `
+        <div class="mb-5">
+          <div class="font-semibold text-sm mb-3">${m.nombre}</div>
+          <div class="space-y-2">
+            ${rates.map(({ label, r, color }) => {
+              const c = { ...m };
+              const pp = { ...p, rentabilidadInversion: r };
+              const calc = calcMilestone(c, pp);
+              return `
+              <div class="flex items-center justify-between p-3 rounded-lg" style="background: var(--bg3);">
+                <div class="flex items-center gap-2">
+                  <div class="w-2 h-2 rounded-full" style="background: ${color};"></div>
+                  <div class="mono text-xs" style="color: var(--text2);">${label} (${fmtPct(r)})</div>
+                </div>
+                <div class="mono text-sm font-medium" style="color: ${color};">${fmtEur(calc.pmtMensual)}/mes</div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`).join('')}
+    </div>
+
+    <!-- Simulador interactivo -->
+    <div class="card p-5">
+      <div class="mono text-xs uppercase tracking-widest mb-4" style="color: var(--text3);">Simulador · Tiempo vs Cuota</div>
+      <div class="mb-3">
+        <label class="mono text-xs" style="color: var(--text3);">Meta personalizada (€)</label>
+        <input type="number" id="sim-meta" value="100000" class="w-full mt-1.5 px-3 py-2 text-sm">
+      </div>
+      <div class="mb-3">
+        <label class="mono text-xs flex justify-between" style="color: var(--text3);">
+          <span>Años: <span id="sim-years-val">10</span></span>
+          <span>Ahorro inicial: <span id="sim-init-val">${fmtEur(p.ahorroActual)}</span></span>
+        </label>
+        <input type="range" id="sim-years" min="1" max="40" value="10" class="w-full mt-1.5"
+               oninput="updateSim()">
+      </div>
+      <div id="sim-result" class="p-4 rounded-xl text-center" style="background: var(--bg3);">
+        <div class="mono text-xs mb-1" style="color: var(--text3);">Cuota mensual necesaria</div>
+        <div class="metric-value text-3xl" style="color: var(--gold2);" id="sim-pmt">—</div>
+      </div>
+      <div class="grid grid-cols-2 gap-3 mt-3" id="sim-extra"></div>
+    </div>
+
+  </div>`;
+}
+
+function updateSim() {
+  const p = state.profile;
+  const meta = parseFloat(document.getElementById('sim-meta')?.value) || 100000;
+  const years = parseInt(document.getElementById('sim-years')?.value) || 10;
+  document.getElementById('sim-years-val').textContent = years;
+
+  const monthly = pmt(meta, p.rentabilidadInversion, years, p.ahorroActual);
+  const totalInvertido = monthly * years * 12;
+  const rendimiento = meta - totalInvertido;
+
+  document.getElementById('sim-pmt').textContent = fmtEur(Math.max(0, monthly)) + '/mes';
+  document.getElementById('sim-extra').innerHTML = `
+    <div class="p-3 rounded-lg" style="background: var(--bg);">
+      <div class="mono text-xs mb-1" style="color: var(--text3);">Total aportado</div>
+      <div class="serif font-bold text-sm">${fmtEur(Math.max(0, totalInvertido))}</div>
+    </div>
+    <div class="p-3 rounded-lg" style="background: var(--bg);">
+      <div class="mono text-xs mb-1" style="color: var(--text3);">Rendimiento</div>
+      <div class="serif font-bold text-sm" style="color: var(--green);">+${fmtEur(Math.max(0, rendimiento))}</div>
+    </div>`;
+}
+
+// ──────────────────────────────────────────────
+//  RENDER: FLUJO Y BENCHMARKING
+// ──────────────────────────────────────────────
+function renderFlujo() {
+  const p = state.profile;
+  const bench = benchmarks(p);
+  const cap = bench.capacidadAhorro;
+
+  // Ingresos vs gastos desglose estimado
+  const gastosCat = [
+    { cat: 'Vivienda', est: p.gastosMensuales * 0.35 },
+    { cat: 'Alimentación', est: p.gastosMensuales * 0.20 },
+    { cat: 'Transporte', est: p.gastosMensuales * 0.12 },
+    { cat: 'Ocio', est: p.gastosMensuales * 0.10 },
+    { cat: 'Salud', est: p.gastosMensuales * 0.08 },
+    { cat: 'Otros', est: p.gastosMensuales * 0.15 },
+  ];
+
+  const ingresoNeto = p.ingresosMensuales * (1 - p.tasaImpuestos / 100);
+  const impuestos = p.ingresosMensuales - ingresoNeto;
+
+  // Reglas benchmark
+  const benchmarks50_30_20 = {
+    necesidades: ingresoNeto * 0.50,
+    deseos: ingresoNeto * 0.30,
+    ahorro: ingresoNeto * 0.20,
+  };
+
+  return `<div class="section-panel space-y-4">
+    <div>
+      <div class="serif font-bold text-xl">Flujo & Benchmarking</div>
+      <div class="mono text-xs mt-0.5" style="color: var(--text3);">Métricas ideales por edad e ingresos</div>
+    </div>
+
+    <!-- Flujo mensual -->
+    <div class="card p-5">
+      <div class="mono text-xs uppercase tracking-widest mb-4" style="color: var(--text3);">Flujo Mensual</div>
+      <div class="space-y-3">
+        <div class="flex justify-between items-center">
+          <div class="flex items-center gap-2">
+            <div class="w-2 h-2 rounded-full" style="background: var(--green);"></div>
+            <span class="text-sm">Ingresos brutos</span>
+          </div>
+          <div class="mono font-medium" style="color: var(--green);">+${fmtEur(p.ingresosMensuales)}</div>
+        </div>
+        <div class="flex justify-between items-center">
+          <div class="flex items-center gap-2">
+            <div class="w-2 h-2 rounded-full" style="background: var(--red);"></div>
+            <span class="text-sm">IRPF & SS (${p.tasaImpuestos}%)</span>
+          </div>
+          <div class="mono font-medium" style="color: var(--red);">-${fmtEur(impuestos)}</div>
+        </div>
+        <div class="flex justify-between items-center">
+          <div class="flex items-center gap-2">
+            <div class="w-2 h-2 rounded-full" style="background: var(--muted);"></div>
+            <span class="text-sm">Gastos totales</span>
+          </div>
+          <div class="mono font-medium" style="color: var(--text2);">-${fmtEur(p.gastosMensuales)}</div>
+        </div>
+        <div class="gold-line"></div>
+        <div class="flex justify-between items-center">
+          <div class="flex items-center gap-2">
+            <div class="w-2 h-2 rounded-full" style="background: var(--gold);"></div>
+            <span class="text-sm font-semibold">Capacidad ahorro</span>
+          </div>
+          <div class="mono font-semibold text-lg" style="color: ${cap >= 0 ? 'var(--gold2)' : 'var(--red)'};">
+            ${cap >= 0 ? '+' : ''}${fmtEur(cap)}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Regla 50/30/20 -->
+    <div class="card p-5">
+      <div class="mono text-xs uppercase tracking-widest mb-1" style="color: var(--text3);">Benchmark · Regla 50/30/20</div>
+      <div class="text-xs mb-4" style="color: var(--text3);">Sobre ingreso neto: ${fmtEur(ingresoNeto)}/mes</div>
+      ${[
+        { label: 'Necesidades (50%)', ideal: benchmarks50_30_20.necesidades, real: p.gastosMensuales * 0.65, color: 'var(--blue)' },
+        { label: 'Deseos (30%)', ideal: benchmarks50_30_20.deseos, real: p.gastosMensuales * 0.35, color: 'var(--gold)' },
+        { label: 'Ahorro (20%)', ideal: benchmarks50_30_20.ahorro, real: cap, color: 'var(--green)' },
+      ].map(({ label, ideal, real, color }) => {
+        const ratio = Math.min(200, ideal > 0 ? (real / ideal) * 100 : 0);
+        const ok = real <= ideal * 1.1;
+        return `
+        <div class="mb-4">
+          <div class="flex justify-between mb-1.5">
+            <span class="mono text-xs" style="color: var(--text2);">${label}</span>
+            <div class="flex gap-3">
+              <span class="mono text-xs" style="color: var(--text3);">Ideal: ${fmtEur(ideal)}</span>
+              <span class="mono text-xs" style="color: ${ok ? 'var(--green)' : 'var(--red)'};">Real: ${fmtEur(real)}</span>
+            </div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${Math.min(100, ratio)}%; background: ${ok ? color : 'var(--red)'};"></div>
+          </div>
+          <div class="mono text-xs mt-1 text-right" style="color: ${ok ? 'var(--green)' : 'var(--red)'};">
+            ${ok ? '✓ OK' : `⚠ ${fmtEur(Math.abs(real - ideal))} de desviación`}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <!-- Benchmarks por edad -->
+    <div class="card p-5">
+      <div class="mono text-xs uppercase tracking-widest mb-4" style="color: var(--text3);">Métricas Ideales · Edad ${p.edad}</div>
+      <div class="space-y-4">
+
+        <div>
+          <div class="flex justify-between mb-2">
+            <div>
+              <div class="text-sm font-medium">Patrimonio acumulado ideal</div>
+              <div class="mono text-xs" style="color: var(--text3);">Regla (edad-22) × 15% × ingreso anual</div>
+            </div>
+            <div class="text-right">
+              <div class="mono text-xs" style="color: var(--text3);">Ideal</div>
+              <div class="serif font-bold" style="color: var(--gold2);">${fmtEur(bench.ahorroIdeal)}</div>
+            </div>
+          </div>
+          <div class="flex justify-between mb-2">
+            <span class="mono text-xs" style="color: var(--text3);">Tu patrimonio: ${fmtEur(p.ahorroActual)}</span>
+            <span class="mono text-xs" style="color: ${p.ahorroActual >= bench.ahorroIdeal ? 'var(--green)' : 'var(--red)'};">
+              ${p.ahorroActual >= bench.ahorroIdeal ? '✓' : fmtSign(p.ahorroActual - bench.ahorroIdeal)}
+            </span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${Math.min(100, (p.ahorroActual/bench.ahorroIdeal)*100)}%;
+                 background: ${p.ahorroActual >= bench.ahorroIdeal ? 'var(--green)' : 'var(--gold)'};"></div>
+          </div>
+        </div>
+
+        <div class="gold-line"></div>
+
+        <div class="grid grid-cols-2 gap-3">
+          ${[
+            ['Ratio deuda/ingreso', bench.ratioDI.toFixed(2), bench.ratioDI < 0.5 ? 'var(--green)' : 'var(--red)', bench.ratioDI < 0.5 ? '✓ <0.5x' : '⚠ Alto'],
+            ['Tasa ahorro real', fmtPct(bench.tasaAhorroReal), bench.tasaAhorroReal >= 20 ? 'var(--green)' : bench.tasaAhorroReal >= 10 ? 'var(--gold)' : 'var(--red)', `Ideal ≥20%`],
+            ['Fondo emergencia', `${Math.round(p.ahorroActual/p.gastosMensuales*10)/10} meses`, p.ahorroActual >= p.gastosMensuales*6 ? 'var(--green)' : 'var(--gold)', 'Meta: 6m'],
+            ['Score financiero', score => score, '—', '—'],
+          ].slice(0,3).map(([label, value, color, note]) => `
+            <div class="p-3 rounded-lg" style="background: var(--bg3);">
+              <div class="mono text-xs mb-1" style="color: var(--text3);">${label}</div>
+              <div class="serif font-bold" style="color: ${color};">${value}</div>
+              <div class="mono text-xs mt-0.5" style="color: var(--text3);">${note}</div>
+            </div>`).join('')}
+          <div class="p-3 rounded-lg" style="background: var(--bg3);">
+            <div class="mono text-xs mb-1" style="color: var(--text3);">Score salud</div>
+            <div class="serif font-bold" style="color: ${scoreColor(bench.scoreSalud)};">${bench.scoreSalud}/100</div>
+            <div class="mono text-xs mt-0.5" style="color: var(--text3);">${scoreLabel(bench.scoreSalud)}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gráfico distribución -->
+    <div class="card p-5">
+      <div class="mono text-xs uppercase tracking-widest mb-4" style="color: var(--text3);">Distribución del Gasto Estimado</div>
+      <div class="chart-wrap" style="height: 180px;">
+        <canvas id="chart-gastos"></canvas>
+      </div>
+    </div>
+
+    <!-- Evolución patrimonial comparativa -->
+    <div class="card p-5">
+      <div class="mono text-xs uppercase tracking-widest mb-1" style="color: var(--text3);">Patrimonio · Escenario vs Inacción</div>
+      <div class="text-xs mb-4" style="color: var(--text3);">Con vs sin aportaciones mensuales</div>
+      <div class="chart-wrap" style="height: 160px;">
+        <canvas id="chart-comp"></canvas>
+      </div>
+    </div>
+
+  </div>`;
+}
+
+function initFlujoCharts() {
+  const p = state.profile;
+
+  // Gasto por categorías — doughnut
+  const ctxG = document.getElementById('chart-gastos');
+  if (ctxG) {
+    state.charts.gastos = new Chart(ctxG, {
+      type: 'doughnut',
+      data: {
+        labels: ['Vivienda', 'Alimentación', 'Transporte', 'Ocio', 'Salud', 'Otros'],
+        datasets: [{
+          data: [0.35, 0.20, 0.12, 0.10, 0.08, 0.15].map(r => Math.round(p.gastosMensuales * r)),
+          backgroundColor: ['#5b8dee','#c9a84c','#4caf7d','#e05555','#9b59b6','#4a4a6a'],
+          borderWidth: 0,
+          hoverOffset: 6,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        cutout: '65%',
+        plugins: {
+          legend: { position: 'right', labels: { color: '#9090b0', font: { family: 'DM Mono', size: 10 }, boxWidth: 10, padding: 8 }},
+          tooltip: { callbacks: { label: ctx => `€${fmt(ctx.raw)}` }, backgroundColor: '#14141e', bodyColor: '#e8e8f0', borderColor: '#1e1e2e', borderWidth: 1 }
+        }
+      }
+    });
+  }
+
+  // Comparativa con/sin aportaciones
+  const ctxC = document.getElementById('chart-comp');
+  if (ctxC) {
+    const projCon = proyeccionPatrimonio(p, 360);
+    const projSin = proyeccionPatrimonio({ ...p, ingresosMensuales: p.gastosMensuales }, 360);
+    state.charts.comp = new Chart(ctxC, {
+      type: 'line',
+      data: {
+        labels: projCon.map(x => x.mes === 0 ? 'Hoy' : `${x.mes/12}a`),
+        datasets: [
+          { label: 'Con aportaciones', data: projCon.map(x => x.valor), borderColor: '#c9a84c', borderWidth: 2, fill: false, tension: 0.4, pointRadius: 0 },
+          { label: 'Sin aportaciones', data: projSin.map(x => x.valor), borderColor: '#4a4a6a', borderWidth: 1.5, borderDash: [4,4], fill: false, tension: 0.4, pointRadius: 0 },
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: '#9090b0', font: { family: 'DM Mono', size: 10 }, boxWidth: 12, padding: 10 }},
+          tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': €' + fmt(ctx.raw) }, backgroundColor: '#14141e', bodyColor: '#e8e8f0', borderColor: '#1e1e2e', borderWidth: 1 }
+        },
+        scales: {
+          x: { grid: { color: 'rgba(30,30,46,0.5)' }, ticks: { color: '#5a5a7a', font: { family: 'DM Mono', size: 10 }}},
+          y: { grid: { color: 'rgba(30,30,46,0.5)' }, ticks: { color: '#5a5a7a', font: { family: 'DM Mono', size: 10 }, callback: v => '€' + (v >= 1000 ? (v/1000).toFixed(0)+'k' : v) }},
+        }
+      }
+    });
+  }
+}
+
+// ──────────────────────────────────────────────
+//  RENDER: STRESS TEST
+// ──────────────────────────────────────────────
+function renderStress() {
+  const p = state.profile;
+  const st = stressTests(p);
+
+  // Gastos con mayor coste de oportunidad
+  const gastosOportunidad = [
+    { label: 'Suscripciones', mensual: 80 },
+    { label: 'Restaurantes', mensual: 200 },
+    { label: 'Caprichos/impulso', mensual: 150 },
+  ];
+
+  return `<div class="section-panel space-y-4">
+    <div>
+      <div class="serif font-bold text-xl">Stress Test</div>
+      <div class="mono text-xs mt-0.5" style="color: var(--text3);">Escenarios adversos & coste de oportunidad</div>
+    </div>
+
+    <!-- Fondo emergencia status -->
+    <div class="card p-5">
+      <div class="mono text-xs uppercase tracking-widest mb-3" style="color: var(--text3);">Colchón de Seguridad</div>
+      <div class="flex items-center gap-4 mb-4">
+        <div>
+          <div class="metric-value text-4xl" style="color: ${st.mesesFondo >= 6 ? 'var(--green)' : st.mesesFondo >= 3 ? 'var(--gold)' : 'var(--red)'};">
+            ${st.mesesFondo}
+          </div>
+          <div class="mono text-xs" style="color: var(--text3);">meses de cobertura</div>
+        </div>
+        <div class="flex-1">
+          <div class="progress-bar" style="height: 8px;">
+            <div class="progress-fill" style="height: 8px; width: ${Math.min(100, (st.mesesFondo/6)*100)}%;
+                 background: ${st.mesesFondo >= 6 ? 'var(--green)' : st.mesesFondo >= 3 ? 'var(--gold)' : 'var(--red)'};"></div>
+          </div>
+          <div class="flex justify-between mono text-xs mt-1" style="color: var(--text3);">
+            <span>0m</span><span>3m mín</span><span>6m ideal</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Escenarios paro -->
+    <div class="card p-5">
+      <div class="mono text-xs uppercase tracking-widest mb-4" style="color: var(--text3);">Escenario · Pérdida de Empleo</div>
+      <div class="space-y-3">
+        <div class="scenario-card" style="border-color: var(--gold);">
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="font-semibold text-sm">Paro 6 meses</div>
+              <div class="mono text-xs mt-1" style="color: var(--text3);">Impacto: ${fmtEur(st.impactoParo6m)}</div>
+            </div>
+            <div class="text-right">
+              <div class="badge" style="background: ${st.coverageParo6m >= 100 ? 'rgba(76,175,125,0.1)' : 'rgba(224,85,85,0.1)'}; color: ${st.coverageParo6m >= 100 ? 'var(--green)' : 'var(--red)'};">
+                ${st.coverageParo6m}% cubierto
+              </div>
+              <div class="mono text-xs mt-1" style="color: var(--text3);">
+                ${st.coverageParo6m >= 100 ? '✓ Cubierto' : `Déficit: ${fmtEur(st.impactoParo6m - p.ahorroActual)}`}
+              </div>
+            </div>
+          </div>
+          <div class="progress-bar mt-2">
+            <div class="progress-fill" style="width: ${st.coverageParo6m}%; background: ${st.coverageParo6m >= 100 ? 'var(--green)' : 'var(--gold)'};"></div>
+          </div>
+        </div>
+
+        <div class="scenario-card" style="border-color: var(--red);">
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="font-semibold text-sm">Paro 12 meses</div>
+              <div class="mono text-xs mt-1" style="color: var(--text3);">Impacto: ${fmtEur(st.impactoParo12m)}</div>
+            </div>
+            <div class="text-right">
+              <div class="badge" style="background: ${st.coverageParo12m >= 100 ? 'rgba(76,175,125,0.1)' : 'rgba(224,85,85,0.1)'}; color: ${st.coverageParo12m >= 100 ? 'var(--green)' : 'var(--red)'};">
+                ${st.coverageParo12m}% cubierto
+              </div>
+              <div class="mono text-xs mt-1" style="color: var(--text3);">
+                ${st.coverageParo12m >= 100 ? '✓ Cubierto' : `Déficit: ${fmtEur(st.impactoParo12m - p.ahorroActual)}`}
+              </div>
+            </div>
+          </div>
+          <div class="progress-bar mt-2">
+            <div class="progress-fill" style="width: ${st.coverageParo12m}%; background: ${st.coverageParo12m >= 100 ? 'var(--green)' : 'var(--red)'};"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Caídas de mercado -->
+    <div class="card p-5">
+      <div class="mono text-xs uppercase tracking-widest mb-4" style="color: var(--text3);">Escenario · Caída de Mercado</div>
+      <div class="formula-box mb-4">
+        Años recuperación = log(1/factor) / log(1+r)<br>
+        r = ${fmtPct(p.rentabilidadInversion)} anual esperado
+      </div>
+      <div class="space-y-3">
+        ${[
+          { label: 'Caída -30%', perdida: st.perdidaMercado30, rec: st.recuperacion30, color: 'var(--gold)' },
+          { label: 'Caída -50%', perdida: st.perdidaMercado50, rec: st.recuperacion50, color: 'var(--red)' },
+        ].map(({ label, perdida, rec, color }) => `
+          <div class="scenario-card" style="border-color: ${color};">
+            <div class="flex justify-between items-start">
+              <div>
+                <div class="font-semibold text-sm">${label}</div>
+                <div class="mono text-xs mt-1" style="color: ${color};">-${fmtEur(perdida)}</div>
+              </div>
+              <div class="text-right">
+                <div class="mono text-xs" style="color: var(--text3);">Recuperación</div>
+                <div class="mono font-bold" style="color: ${color};">${rec} años</div>
+              </div>
+            </div>
+            <div class="mono text-xs mt-2" style="color: var(--text3);">
+              Patrimonio residual: ${fmtEur(p.ahorroActual - perdida)}
+            </div>
+          </div>`).join('')}
+      </div>
+      <div class="chart-wrap mt-4" style="height: 160px;">
+        <canvas id="chart-recovery"></canvas>
+      </div>
+    </div>
+
+    <!-- Inflación choque -->
+    <div class="card p-5">
+      <div class="mono text-xs uppercase tracking-widest mb-3" style="color: var(--text3);">Choque de Inflación</div>
+      <div class="grid grid-cols-2 gap-3">
+        ${[
+          { label: `Inflación +2% (${fmtPct(p.inflacion+2)})`, impacto: st.extraInflacion },
+          { label: `Inflación +4% (${fmtPct(p.inflacion+4)})`, impacto: st.extraInflacion * 2 },
+        ].map(({ label, impacto }) => `
+          <div class="p-3 rounded-lg" style="background: var(--bg3);">
+            <div class="mono text-xs mb-1" style="color: var(--text3);">${label}</div>
+            <div class="serif font-bold" style="color: var(--red);">+${fmtEur(impacto)}/año</div>
+            <div class="mono text-xs mt-0.5" style="color: var(--text3);">impacto gastos</div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- Coste de oportunidad -->
+    <div class="card p-5">
+      <div class="mono text-xs uppercase tracking-widest mb-1" style="color: var(--text3);">Coste de Oportunidad</div>
+      <div class="text-xs mb-4" style="color: var(--text3);">Si invirtieras ese gasto mensual al ${fmtPct(p.rentabilidadInversion)}</div>
+      <div class="formula-box mb-4">
+        CO = PMT × [(1+r)^n − 1] / r<br>
+        Valor futuro de una anualidad mensual
+      </div>
+
+      <!-- Calculadora interactiva -->
+      <div class="mb-3">
+        <label class="mono text-xs" style="color: var(--text3);">Gasto mensual a analizar (€)</label>
+        <input type="number" id="co-gasto" value="150" class="w-full mt-1.5 px-3 py-2 text-sm" oninput="updateCO()">
+      </div>
+      <div class="mb-4">
+        <label class="mono text-xs flex justify-between" style="color: var(--text3);">
+          <span>Horizonte: <span id="co-years-val">10</span> años</span>
+        </label>
+        <input type="range" id="co-years" min="1" max="40" value="10" class="w-full mt-1.5" oninput="updateCO()">
+      </div>
+      <div id="co-result" class="grid grid-cols-3 gap-2"></div>
+
+      <div class="gold-line my-4"></div>
+
+      <div class="mono text-xs uppercase tracking-widest mb-3" style="color: var(--text3);">Ejemplos Comunes</div>
+      <div class="space-y-2">
+        ${gastosOportunidad.map(g => {
+          const co10 = Math.round(costeOportunidad(g.mensual, 10, p.rentabilidadInversion));
+          const co20 = Math.round(costeOportunidad(g.mensual, 20, p.rentabilidadInversion));
+          return `
+          <div class="flex items-center justify-between p-3 rounded-lg" style="background: var(--bg3);">
+            <div>
+              <div class="text-sm font-medium">${g.label}</div>
+              <div class="mono text-xs" style="color: var(--text3);">${fmtEur(g.mensual)}/mes</div>
+            </div>
+            <div class="text-right">
+              <div class="mono text-xs" style="color: var(--text3);">10a / 20a</div>
+              <div class="mono text-sm" style="color: var(--gold2);">${fmtEur(co10)} / ${fmtEur(co20)}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <!-- Plan de contingencia -->
+    <div class="card p-5">
+      <div class="mono text-xs uppercase tracking-widest mb-3" style="color: var(--text3);">Plan de Contingencia Recomendado</div>
+      <div class="space-y-2">
+        ${[
+          { accion: `Fondo emergencia objetivo`, valor: fmtEur(p.gastosMensuales * 6), done: p.ahorroActual >= p.gastosMensuales * 6 },
+          { accion: `Seguro de vida/invalidez`, valor: `${fmtEur(p.ingresosMensuales * 36)} capital`, done: false },
+          { accion: `Diversificación (≥3 activos)`, valor: 'Reduce correlación', done: false },
+          { accion: `Plan B ingresos`, valor: `Freelance / Side income`, done: false },
+        ].map(({ accion, valor, done }) => `
+          <div class="flex items-center gap-3 p-3 rounded-lg" style="background: var(--bg3);">
+            <div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
+                 style="background: ${done ? 'rgba(76,175,125,0.15)' : 'rgba(74,74,106,0.3)'}; color: ${done ? 'var(--green)' : 'var(--text3)'}; font-size: 10px;">
+              ${done ? '✓' : '○'}
+            </div>
+            <div class="flex-1">
+              <div class="text-sm">${accion}</div>
+              <div class="mono text-xs" style="color: var(--text3);">${valor}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+  </div>`;
+}
+
+function updateCO() {
+  const p = state.profile;
+  const gasto = parseFloat(document.getElementById('co-gasto')?.value) || 150;
+  const years = parseInt(document.getElementById('co-years')?.value) || 10;
+  document.getElementById('co-years-val').textContent = years;
+
+  const co = Math.round(costeOportunidad(gasto, years, p.rentabilidadInversion));
+  const total = gasto * years * 12;
+  const rend = co - total;
+
+  document.getElementById('co-result').innerHTML = `
+    <div class="p-3 rounded-lg text-center" style="background: var(--bg);">
+      <div class="mono text-xs mb-1" style="color: var(--text3);">Gastado</div>
+      <div class="serif font-bold text-sm">${fmtEur(total)}</div>
+    </div>
+    <div class="p-3 rounded-lg text-center" style="background: var(--bg);">
+      <div class="mono text-xs mb-1" style="color: var(--text3);">Invertido valdría</div>
+      <div class="serif font-bold text-sm" style="color: var(--gold2);">${fmtEur(co)}</div>
+    </div>
+    <div class="p-3 rounded-lg text-center" style="background: var(--bg);">
+      <div class="mono text-xs mb-1" style="color: var(--text3);">Rendimiento</div>
+      <div class="serif font-bold text-sm" style="color: var(--green);">+${fmtEur(rend)}</div>
+    </div>`;
+}
+
+function initStressCharts() {
+  const p = state.profile;
+  const ctx = document.getElementById('chart-recovery');
+  if (!ctx) return;
+
+  // Proyección recuperación desde caídas
+  const months = 120;
+  const labels = Array.from({ length: months/12 + 1 }, (_, i) => i === 0 ? 'Hoy' : `${i}a`);
+  const r = p.rentabilidadInversion / 100 / 12;
+  const addMonthly = Math.max(0, p.ingresosMensuales - p.gastosMensuales);
+
+  function growFromShock(shock, months) {
+    const data = [];
+    let v = p.ahorroActual * (1 - shock);
+    for (let i = 0; i <= months; i += 12) {
+      data.push(Math.round(v));
+      for (let j = 0; j < 12; j++) v = v * (1 + r) + addMonthly;
+    }
+    return data;
+  }
+
+  state.charts.recovery = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Sin caída', data: proyeccionPatrimonio(p, months).map(x => x.valor), borderColor: '#c9a84c', borderWidth: 2, fill: false, tension: 0.4, pointRadius: 0 },
+        { label: '-30%', data: growFromShock(0.30, months), borderColor: '#e8c97a', borderWidth: 1.5, borderDash: [4,3], fill: false, tension: 0.4, pointRadius: 0 },
+        { label: '-50%', data: growFromShock(0.50, months), borderColor: '#e05555', borderWidth: 1.5, borderDash: [4,3], fill: false, tension: 0.4, pointRadius: 0 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#9090b0', font: { family: 'DM Mono', size: 10 }, boxWidth: 12, padding: 8 }},
+        tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': €' + fmt(ctx.raw) }, backgroundColor: '#14141e', bodyColor: '#e8e8f0', borderColor: '#1e1e2e', borderWidth: 1 }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(30,30,46,0.3)' }, ticks: { color: '#5a5a7a', font: { family: 'DM Mono', size: 10 }}},
+        y: { grid: { color: 'rgba(30,30,46,0.3)' }, ticks: { color: '#5a5a7a', font: { family: 'DM Mono', size: 10 }, callback: v => '€' + (v >= 1000 ? (v/1000).toFixed(0)+'k' : v) }},
+      }
+    }
+  });
+}
+
+// ──────────────────────────────────────────────
+//  SETUP MODAL
+// ──────────────────────────────────────────────
+function openSetup() {
+  const p = state.profile;
+  document.getElementById('setup-form').innerHTML = `
+    <div class="space-y-4">
+      <div class="grid grid-cols-2 gap-3">
+        ${renderField('nombre', 'Nombre', p.nombre, 'text')}
+        ${renderField('edad', 'Edad', p.edad)}
+        ${renderField('edadJubilacion', 'Edad Jubilación', p.edadJubilacion)}
+        ${renderField('esperanzaVida', 'Esperanza Vida', p.esperanzaVida)}
+      </div>
+      <div class="gold-line"></div>
+      <div class="mono text-xs uppercase tracking-widest" style="color: var(--text3);">Ingresos & Gastos</div>
+      <div class="grid grid-cols-2 gap-3">
+        ${renderField('ingresosMensuales', 'Ingresos brutos/mes €', p.ingresosMensuales)}
+        ${renderField('gastosMensuales', 'Gastos/mes €', p.gastosMensuales)}
+        ${renderField('ahorroActual', 'Ahorro/inversión actual €', p.ahorroActual)}
+        ${renderField('deudas', 'Deudas totales €', p.deudas)}
+        ${renderField('tasaImpuestos', 'Tipo impositivo % (IRPF)', p.tasaImpuestos)}
+        ${renderField('gastoJubilacion', '% gasto en jubilación', p.gastoJubilacion)}
+      </div>
+      <div class="gold-line"></div>
+      <div class="mono text-xs uppercase tracking-widest" style="color: var(--text3);">Parámetros Macro</div>
+      <div class="grid grid-cols-2 gap-3">
+        ${renderField('inflacion', 'Inflación % anual', p.inflacion)}
+        ${renderField('rentabilidadInversion', 'Rentabilidad base %', p.rentabilidadInversion)}
+        ${renderField('rentabilidadConservadora', 'Rentabilidad conserv. %', p.rentabilidadConservadora)}
+        ${renderField('rentabilidadAgresiva', 'Rentabilidad agresiva %', p.rentabilidadAgresiva)}
+      </div>
+    </div>`;
+  document.getElementById('setup-modal').style.display = 'flex';
+}
+
+function renderField(key, label, value, type = 'number') {
+  return `<div>
+    <label class="mono text-xs block mb-1" style="color: var(--text3);">${label}</label>
+    <input type="${type}" id="field-${key}" value="${value}" class="w-full px-3 py-2 text-sm">
+  </div>`;
+}
+
+function saveProfile() {
+  const fields = ['nombre','edad','edadJubilacion','esperanzaVida','ingresosMensuales',
+    'gastosMensuales','ahorroActual','deudas','tasaImpuestos','gastoJubilacion',
+    'inflacion','rentabilidadInversion','rentabilidadConservadora','rentabilidadAgresiva'];
+  fields.forEach(f => {
+    const el = document.getElementById('field-' + f);
+    if (el) state.profile[f] = el.type === 'text' ? el.value : parseFloat(el.value) || 0;
+  });
+  save();
+  closeSetup();
+  render();
+}
+
+function closeSetup() {
+  document.getElementById('setup-modal').style.display = 'none';
+}
+
+// ──────────────────────────────────────────────
+//  MILESTONE MODAL
+// ──────────────────────────────────────────────
+function openMilestone(id = null) {
+  state.editingMilestone = id;
+  const m = id ? state.milestones.find(x => x.id === id) : {
+    nombre: '', tipo: 'meta', importeHoy: 0, aniosHasta: 5,
+    ajusteInflacion: true, gastosExtra: 0, hipotecaPct: 0,
+  };
+
+  document.getElementById('milestone-form').innerHTML = `
+    <div class="space-y-4">
+      <div>
+        <label class="mono text-xs block mb-1" style="color: var(--text3);">Nombre del hito</label>
+        <input type="text" id="m-nombre" value="${m.nombre}" placeholder="ej. Coche eléctrico" class="w-full px-3 py-2 text-sm">
+      </div>
+      <div>
+        <label class="mono text-xs block mb-1" style="color: var(--text3);">Tipo</label>
+        <select id="m-tipo" class="w-full px-3 py-2 text-sm">
+          ${['meta','compra','jubilacion','fondo','negocio','viaje','educacion'].map(t =>
+            `<option value="${t}" ${m.tipo === t ? 'selected' : ''}>${t}</option>`).join('')}
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="mono text-xs block mb-1" style="color: var(--text3);">Importe hoy €</label>
+          <input type="number" id="m-importe" value="${m.importeHoy}" class="w-full px-3 py-2 text-sm">
+        </div>
+        <div>
+          <label class="mono text-xs block mb-1" style="color: var(--text3);">Años hasta hito</label>
+          <input type="number" id="m-anios" value="${m.aniosHasta}" min="1" max="50" class="w-full px-3 py-2 text-sm">
+        </div>
+        <div>
+          <label class="mono text-xs block mb-1" style="color: var(--text3);">Gastos extra %</label>
+          <input type="number" id="m-extra" value="${m.gastosExtra}" min="0" max="30" class="w-full px-3 py-2 text-sm">
+        </div>
+        <div>
+          <label class="mono text-xs block mb-1" style="color: var(--text3);">% Hipotecado</label>
+          <input type="number" id="m-hipoteca" value="${m.hipotecaPct}" min="0" max="90" class="w-full px-3 py-2 text-sm">
+        </div>
+      </div>
+      <div class="flex items-center gap-3 p-3 rounded-lg" style="background: var(--bg3);">
+        <input type="checkbox" id="m-inflacion" ${m.ajusteInflacion ? 'checked' : ''}
+               style="width: 16px; height: 16px; accent-color: var(--gold);">
+        <label for="m-inflacion" class="mono text-xs" style="color: var(--text2);">Ajustar por inflación</label>
+      </div>
+    </div>`;
+
+  document.getElementById('milestone-modal').style.display = 'flex';
+}
+
+function editMilestone(id) { openMilestone(id); }
+
+function saveMilestone() {
+  const m = {
+    id: state.editingMilestone || Date.now(),
+    nombre: document.getElementById('m-nombre').value || 'Meta',
+    tipo: document.getElementById('m-tipo').value,
+    importeHoy: parseFloat(document.getElementById('m-importe').value) || 0,
+    aniosHasta: parseInt(document.getElementById('m-anios').value) || 5,
+    gastosExtra: parseFloat(document.getElementById('m-extra').value) || 0,
+    hipotecaPct: parseFloat(document.getElementById('m-hipoteca').value) || 0,
+    ajusteInflacion: document.getElementById('m-inflacion').checked,
+    completado: false,
+  };
+
+  if (state.editingMilestone) {
+    const idx = state.milestones.findIndex(x => x.id === state.editingMilestone);
+    if (idx >= 0) state.milestones[idx] = m;
+  } else {
+    state.milestones.push(m);
+  }
+
+  save();
+  closeMilestone();
+  render();
+}
+
+function closeMilestone() {
+  document.getElementById('milestone-modal').style.display = 'none';
+  state.editingMilestone = null;
+}
+
+function deleteMilestone(id) {
+  state.milestones = state.milestones.filter(m => m.id !== id);
+  save();
+  render();
+}
+
+function toggleMilestone(id) {
+  const m = state.milestones.find(x => x.id === id);
+  if (m) m.completado = !m.completado;
+  save();
+  render();
+}
+
+// ──────────────────────────────────────────────
+//  INIT
+// ──────────────────────────────────────────────
+load();
+navigate('dashboard');
+
+// Init simulator on cuota tab
+document.addEventListener('change', e => {
+  if (e.target.id === 'sim-years' || e.target.id === 'sim-meta') updateSim();
+});
+
+// Init CO on stress tab
+document.addEventListener('input', e => {
+  if (e.target.id === 'co-years' || e.target.id === 'co-gasto') updateCO();
+});
+
+// Post-render init for simulators
+const origNavigate = navigate;
+</script>
+</body>
+</html>
